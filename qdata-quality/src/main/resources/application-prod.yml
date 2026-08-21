@@ -1,0 +1,173 @@
+# Copyright © 2025-present Jiangsu Qiantong Technology Co., Ltd.
+#
+# This file is part of qData Data Middle Platform (Open Source Edition).
+#
+# qData is licensed under Apache License 2.0 with additional qData terms.
+# You may use qData for commercial purposes, but you may not remove, hide,
+# modify, or replace the qData logo, copyright notices, license notices,
+# or attribution information without a separate commercial license.
+#
+# White-label use, OEM distribution, rebranding, or presenting qData as
+# another product requires separate commercial authorization from
+# Jiangsu Qiantong Technology Co., Ltd.
+#
+# Business License: https://community.qdata.tech/business/policy.html
+# See the LICENSE file in the project root for full license information.
+
+datasource:
+  type: dm8
+
+custom:
+  mongo:
+    enabled: true
+
+# Spring configuration
+spring:
+  # redis configuration
+  redis:
+    # Address
+    host: 127.0.0.1
+    # Port, default is 6379
+    port: 6379
+    # Database index
+    database: 0
+    # Password
+    password:
+    # Connection timeout
+    timeout: 10s
+    lettuce:
+      pool:
+        # Minimum idle connections in the connection pool
+        min-idle: 0
+        # Maximum idle connections in the connection pool
+        max-idle: 8
+        # Maximum number of database connections for the connection pool
+        max-active: 8
+        # #The maximum blocking waiting time of the connection pool (use a negative value to indicate no limit)
+        max-wait: -1ms
+  rabbitmq:
+    host: 127.0.0.1
+    port: 40003
+    username: admin
+    password: password
+    #    listener:
+    #      simple:
+    #        acknowledge-mode: manual
+    #        concurrency: 1
+    #        max-concurrency: 10
+    listener:
+      direct:
+        auto-startup: false
+      simple:
+        auto-startup: false
+        acknowledge-mode: manual
+        concurrency: 1
+        max-concurrency: 10
+  data:
+    mongodb:
+      uri: mongodb://sjzt:Desl9Y4eIQP1BHh7@127.0.0.1:27017/data?authSource=admin
+      field-naming-strategy: org.springframework.data.mapping.model.SnakeCaseFieldNamingStrategy # Automatically turn the hump
+      print: true
+      slowQuery: true
+      slowTime: 1000
+  datasource:
+    druid:
+      stat-view-servlet:
+        # Whether to enable Druid’s monitoring statistics function
+        enabled: false
+        # Username to access the Druid monitoring page
+        loginUsername: qdata
+        # Password to access Druid monitoring page
+        loginPassword: 123456
+    dynamic:
+      druid:
+        # The number of connections created when the connection pool is initialized
+        initial-size: 5
+        # Minimum number of idle connections in the connection pool
+        min-idle: 5
+        # Maximum number of active connections in the connection pool
+        maxActive: 20
+        # Maximum time the connection pool waits for a connection (milliseconds)
+        maxWait: 60000
+        # Database connection timeout (milliseconds)
+        connectTimeout: 30000
+        # Socket timeout (milliseconds)
+        socketTimeout: 60000
+        # Idle connection detection period (milliseconds)
+        timeBetweenEvictionRunsMillis: 60000
+        # Minimum idle connection lifetime (milliseconds)
+        minEvictableIdleTimeMillis: 300000
+        # SQL statement used to check whether the connection is valid
+        validationQuery: SELECT 1 FROM DUAL
+        # Whether to check the validity of the connection when idle
+        testWhileIdle: true
+        # Whether to test the validity of the connection when borrowing it
+        testOnBorrow: false
+        # Whether to test the validity of the connection when returning it
+        testOnReturn: false
+        # Whether to turn on the PreparedStatement cache of the connection pool
+        poolPreparedStatements: true
+        # PreparedStatement cache limit per connection pool
+        maxPoolPreparedStatementPerConnectionSize: 20
+        # Configure Druid filters
+        filters: stat,slf4j
+        # Druid connection property configuration
+        connectionProperties: druid.stat.mergeSql\=true;druid.stat.slowSqlMillis\=5000
+      datasource:
+        # Main database data source configuration
+        master:
+          # Dynamically loaded configuration properties
+          driver-class-name: ${${datasource.type}.driver-class-name}
+          url: ${${datasource.type}.url}
+          username: ${${datasource.type}.username}
+          password: ${${datasource.type}.password}
+
+# MySQL configuration file
+mysql:
+  # JDBC driver class name
+  driver-class-name: com.mysql.cj.jdbc.Driver
+  # Main library JDBC connection URL
+  url: jdbc:mysql://mysql:3306/qdata?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+  # Main library username
+  username: root
+  # Main database password
+  password: o5KjnPYxswsiURZHCPwd
+
+# Dameng configuration file
+dm8:
+  # JDBC driver class name
+  driver-class-name: dm.jdbc.driver.DmDriver
+  # Main library JDBC connection URL
+  url: jdbc:dm://127.0.0.1:5236/QDATA?STU&zeroDateTimeBehavior=convertToNull&useUnicode=true&characterEncoding=utf-8&schema=QDATA&serverTimezone=Asia/Shanghai
+  # Main library username
+  username: QDATA
+  # Main database password
+  password: password
+
+# NPC Treasury configuration file
+kingbase8:
+  # JDBC driver class name
+  driver-class-name: com.kingbase8.Driver
+  # Main library JDBC connection URL
+  url: jdbc:kingbase8://127.0.0.1:54321/QDATA?characterEncoding=utf8&connectTimeout=1000&socketTimeout=3000&autoReconnect=true&useUnicode=true&useSSL=false&serverTimezone=UTC&currentSchema=qdata
+  # Main library username
+  username: kingbase
+  # Main database password
+  password: 123456
+
+# Oracle12c configuration file
+oracle:
+  # JDBC driver class name
+  driver-class-name: oracle.jdbc.OracleDriver
+  # Main library JDBC connection URL
+  url: jdbc:oracle:thin:@127.0.0.1:1521:xe?oracle.jdbc.timezoneAsRegion=true&oracle.jdbc.defaultTimezone=Asia/Shanghai&currentSchema=ANIVIA
+  # Main library username
+  username: ANIVIA
+  # Main database password
+  password: ANIVIA
+
+##
+file:
+  job:
+    log:
+      qualitytask_prefix_url: D:/qData-develop/qdata-quality/job-log/task-prefix-url

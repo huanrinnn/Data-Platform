@@ -1,0 +1,56 @@
+  2026-08-17 17:38:33Task execution started
+  2026-08-17 17:38:33Quality task - query triggered quality task info: DppQualityTaskRespVO(id=16, taskName=ODS-∂©µ•_ods_app_orders_20260816135016, catCode=-1, contact=null, contactId=0, contactNumber=null, status=0, description=, priority=medium, workerGroup=default, retryTimes=0, retryInterval=0, delayTime=0, validFlag=true, delFlag=false, strategy=PARALLEL, cycle=0 0 0 * * ?, createBy=Œ‚Õ¨, creatorId=2, createTime=Sun Aug 16 13:50:55 CST 2026, updateBy=Œ‚Õ¨, updaterId=null, updateTime=Mon Aug 17 17:38:13 CST 2026, assetFlag=1, assetId=37, dppQualityTaskObjSaveReqVO=null, dppQualityTaskEvaluateRespVOS=null, taskObjNum=null, taskEvaluateNum=null, lastExecuteTime=null)
+  2026-08-17 17:38:33Quality task - generated batch number: 20260817173833
+  2026-08-17 17:38:34Quality task - created task log, first create log then execute: 747
+  2026-08-17 17:38:34Quality task - start querying datasource list
+  2026-08-17 17:38:34Quality task - datasource list count: 1
+  2026-08-17 17:38:34Quality task - grouping by datasource
+  2026-08-17 17:38:34Quality task - grouping completed, total: 1 group(s)
+  2026-08-17 17:38:34Quality task - getting datasource connection info
+  2026-08-17 17:38:34Quality task - datasource info obtained, preparing database connection. Datasource name: platform_ods_3306, datasource ID: 13
+  2026-08-17 17:38:34Quality task - datasource connection succeeded.
+  2026-08-17 17:38:34Quality task - fetching quality rules for this datasource.
+  2026-08-17 17:38:34Quality task - processing each quality rule for this datasource.
+  2026-08-17 17:38:34Quality task - rule prepared, getting column info.
+  2026-08-17 17:38:34Quality task - column info set, preparing to execute rule.
+  2026-08-17 17:38:34Quality task - executing rule task.
+  2026-08-17 17:38:34Quality task - executing rule, rule ID: 21, rule type: NUMERIC_RANGE_VALIDATION
+  2026-08-17 17:38:34Quality task - getting SQL generator and generating SQL script.
+  2026-08-17 17:38:34Quality task - SQL generated, CheckSQL: SELECT COUNT(*) AS totalCount, COUNT(CASE WHEN ((order_amount is null or not (order_amount<=10000.000000 AND order_amount>=0.000000))) THEN 1 END) AS errorCount FROM ods_app_orders, ErrorSQL: SELECT * FROM ods_app_orders WHERE ((order_amount is null or not (order_amount<=10000.000000 AND order_amount>=0.000000)))
+  2026-08-17 17:38:34Quality task - executing validation SQL.
+  2026-08-17 17:38:34Quality task - validation SQL executed, error count: 2, total count: 7
+  2026-08-17 17:38:34Quality task - querying error details.
+  2026-08-17 17:38:34Quality task - error detail query completed, total: 2 records.
+  2026-08-17 17:38:34Quality task - writing error data to MongoDB.
+  2026-08-17 17:38:34Quality task - MongoDB write completed.
+  2026-08-17 17:38:34Quality task - rule execution completed, building result object.
+  2026-08-17 17:38:34Quality task - rule task completed.
+  2026-08-17 17:38:34Quality task - rule prepared, getting column info.
+  2026-08-17 17:38:34Quality task - column info set, preparing to execute rule.
+  2026-08-17 17:38:34Quality task - executing rule task.
+  2026-08-17 17:38:34Quality task - executing rule, rule ID: 23, rule type: TIME_ORDER_VALIDATION
+  2026-08-17 17:38:34Quality task - getting SQL generator and generating SQL script.
+  2026-08-17 17:38:34Quality task - SQL generated, CheckSQL: SELECT COUNT(*) AS totalCount, COUNT(CASE WHEN ((order_time IS NULL OR paid_time IS NULL OR NOT order_time<paid_time)) THEN 1 END) AS errorCount FROM ods_app_orders, ErrorSQL: SELECT * FROM ods_app_orders WHERE ((order_time IS NULL OR paid_time IS NULL OR NOT order_time<paid_time))
+  2026-08-17 17:38:34Quality task - executing validation SQL.
+  2026-08-17 17:38:35Quality task - validation SQL executed, error count: 4, total count: 7
+  2026-08-17 17:38:35Quality task - querying error details.
+  2026-08-17 17:38:35Quality task - error detail query completed, total: 4 records.
+  2026-08-17 17:38:35Quality task - writing error data to MongoDB.
+  2026-08-17 17:38:35Quality task - MongoDB write completed.
+  2026-08-17 17:38:35Quality task - rule execution completed, building result object.
+  2026-08-17 17:38:35Quality task - rule task completed.
+  2026-08-17 17:38:35Quality task - rule prepared, getting column info.
+  2026-08-17 17:38:35Quality task - column info set, preparing to execute rule.
+  2026-08-17 17:38:35Quality task - executing rule task.
+  2026-08-17 17:38:35Quality task - executing rule, rule ID: 34, rule type: NOT_NULL_VALIDATION
+  2026-08-17 17:38:35Quality task - getting SQL generator and generating SQL script.
+  2026-08-17 17:38:35Quality task - SQL generated, CheckSQL: SELECT COUNT(*) AS totalCount, COUNT(CASE WHEN (paid_time IS NULL) THEN 1 END) AS errorCount FROM ods_app_orders, ErrorSQL: SELECT * FROM ods_app_orders WHERE (paid_time IS NULL)
+  2026-08-17 17:38:35Quality task - executing validation SQL.
+  2026-08-17 17:38:35Quality task - validation SQL executed, error count: 3, total count: 7
+  2026-08-17 17:38:35Quality task - querying error details.
+  2026-08-17 17:38:35Quality task - error detail query completed, total: 3 records.
+  2026-08-17 17:38:35Quality task - writing error data to MongoDB.
+  2026-08-17 17:38:36Quality task - MongoDB write completed.
+  2026-08-17 17:38:36Quality task - rule execution completed, building result object.
+  2026-08-17 17:38:36Quality task - rule task completed.
+  2026-08-17 17:38:36Task ended

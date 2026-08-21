@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>qData v1.6.0 开源版 — 技术架构（代码核实）</title>
+<style>
+  :root {
+    --bg: #f5f6fa; --card: #fff; --border: #e2e6ed; --text: #2c3e50;
+    --muted: #7f8c9b; --shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6; padding: 32px 24px;
+  }
+  .container { max-width: 1300px; margin: 0 auto; }
+  h1 { font-size: 28px; margin-bottom: 4px; color: #1a1a2e; }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
+  h2 { font-size: 20px; margin: 32px 0 16px; color: #1a1a2e; border-bottom: 2px solid #e2e6ed; padding-bottom: 8px; }
+
+  .diagram-wrap {
+    background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08);
+    border: 1px solid var(--border); padding: 20px; margin-bottom: 32px; overflow-x: auto;
+  }
+  .diagram-wrap svg { display: block; margin: 0 auto; min-width: 1100px; }
+
+  .flow-row {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 12px;
+    margin-bottom: 20px; padding: 16px 20px; background: var(--card);
+    border-radius: 10px; box-shadow: var(--shadow); border: 1px solid var(--border);
+  }
+  .flow-label { font-weight: 700; font-size: 13px; min-width: 80px; color: var(--muted); }
+  .flow-item {
+    padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600;
+    color: #fff; white-space: nowrap;
+  }
+
+  .tier {
+    margin-bottom: 20px; background: var(--card); border-radius: 10px;
+    box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--border);
+  }
+  .tier-header {
+    padding: 12px 20px; font-weight: 700; font-size: 14px;
+    letter-spacing: .5px; color: #fff; display: flex; align-items: center; gap: 8px;
+  }
+  .tier-body { display: flex; flex-wrap: wrap; gap: 10px; padding: 16px 20px; }
+
+  .card {
+    background: #fafbfc; border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 16px; min-width: 150px; flex: 1 1 170px; max-width: 260px;
+  }
+  .card .name { font-weight: 700; font-size: 14px; margin-bottom: 2px; }
+  .card .ver { font-size: 11px; color: var(--muted); }
+  .card .desc { font-size: 12px; color: #555; margin-top: 4px; }
+  .card .badge {
+    display: inline-block; font-size: 10px; padding: 1px 7px;
+    border-radius: 10px; margin-top: 6px; font-weight: 600;
+  }
+
+  .tier-frontend .tier-header { background: #3498db; }
+  .tier-gateway  .tier-header { background: #7f8c9b; }
+  .tier-backend  .tier-header { background: #2ecc71; }
+  .tier-storage  .tier-header { background: #e67e22; }
+  .tier-scheduler .tier-header { background: #9b59b6; }
+  .tier-bigdata  .tier-header { background: #1abc9c; }
+  .tier-etl      .tier-header { background: #e74c3c; }
+  .tier-mq       .tier-header { background: #f39c12; }
+  .tier-ds       .tier-header { background: #2c3e50; }
+
+  .badge-core     { background: #d5f5e3; color: #1e8449; }
+  .badge-ds       { background: #d6eaf8; color: #21618c; }
+  .badge-code     { background: #fef9e7; color: #7d6608; }
+  .badge-info     { background: #e8daef; color: #6c3483; }
+
+  .arrow-down { text-align: center; color: #bdc3c7; font-size: 20px; margin: 2px 0; user-select: none; }
+  .arrow-side { display: inline-block; color: #bdc3c7; margin: 0 6px; }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 16px; margin-top: 28px;
+    padding: 14px 20px; background: var(--card); border-radius: 10px;
+    border: 1px solid var(--border); font-size: 13px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+
+  .notes {
+    margin-top: 20px; background: #fffdf5; border: 1px solid #f9e79f;
+    border-radius: 10px; padding: 18px 22px; font-size: 13px; line-height: 1.8;
+  }
+  .notes h3 { font-size: 15px; margin-bottom: 8px; color: #7d6608; }
+
+  .ds-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px;
+  }
+  .ds-card {
+    background: #f0f3f7; border: 1px solid #dde1e7; border-radius: 6px;
+    padding: 6px 10px; text-align: center; font-size: 12px; font-weight: 600;
+  }
+  .ds-card.relational { border-left: 3px solid #2980b9; }
+  .ds-card.bigdata    { border-left: 3px solid #27ae60; }
+  .ds-card.nosql      { border-left: 3px solid #e67e22; }
+  .ds-card.mq         { border-left: 3px solid #f39c12; }
+  .ds-card.storage    { border-left: 3px solid #8e44ad; }
+  .ds-card.stream     { border-left: 3px solid #e74c3c; }
+
+  @media (max-width: 700px) { .card { min-width: 120px; flex: 1 1 120px; } }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <h1>&#x1F3D7;&#xFE0F; qData &#x6570;&#x636E;&#x4E2D;&#x53F0; &#x5F00;&#x6E90;&#x7248; — &#x6280;&#x672F;&#x67B6;&#x6784;</h1>
+  <p class="subtitle">
+    qData v1.6.0 Open Source Edition · &#x57FA;&#x4E8E; pom.xml / Docker Compose / Java &#x6E90;&#x7801;&#x5B9E;&#x9645;&#x6838;&#x5B9E; · <span id="date"></span>
+  </p>
+
+  <!-- ================================================================ -->
+  <!--  SVG Architecture Flow Diagram                                   -->
+  <!-- ================================================================ -->
+  <h2>&#x1F4CA; &#x67B6;&#x6784;&#x6D41;&#x7A0B;&#x56FE;</h2>
+  <div class="diagram-wrap">
+    <svg viewBox="0 0 1200 710" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="aB" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#2980b9"/></marker>
+        <marker id="aG" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#27ae60"/></marker>
+        <marker id="aO" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#e67e22"/></marker>
+        <marker id="aR" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#e74c3c"/></marker>
+        <marker id="aP" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#9b59b6"/></marker>
+        <marker id="aGr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#95a5a6"/></marker>
+        <marker id="aT" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#1abc9c"/></marker>
+        <filter id="sh"><feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-opacity="0.12"/></filter>
+      </defs>
+
+      <!-- ============================================================ -->
+      <!--  Row 1: User Browser  y=10~50                                -->
+      <!-- ============================================================ -->
+      <rect x="440" y="10" width="320" height="40" rx="10" fill="#3498db" filter="url(#sh)"/>
+      <text x="600" y="36" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">&#x1F310; &#x7528;&#x6237;&#x6D4F;&#x89C8;&#x5668; (Vue 3.5 + Element Plus)</text>
+
+      <!-- Arrow user → nginx -->
+      <line x1="600" y1="50" x2="600" y2="78" stroke="#3498db" stroke-width="2" marker-end="url(#aB)"/>
+
+      <!-- ============================================================ -->
+      <!--  Row 2: Nginx  y=80~118                                      -->
+      <!-- ============================================================ -->
+      <rect x="440" y="80" width="320" height="38" rx="10" fill="#7f8c9b" filter="url(#sh)"/>
+      <text x="600" y="104" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">&#x1F6AA; Nginx 1.24 (&#x53CD;&#x5411;&#x4EE3;&#x7406; / &#x8D1F;&#x8F7D;&#x5747;&#x8861;)</text>
+
+      <!-- Arrows nginx → 3 backends -->
+      <line x1="500" y1="118" x2="260" y2="148" stroke="#7f8c9b" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#aGr)"/>
+      <line x1="600" y1="118" x2="600" y2="148" stroke="#7f8c9b" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#aGr)"/>
+      <line x1="700" y1="118" x2="940" y2="148" stroke="#7f8c9b" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#aGr)"/>
+
+      <!-- ============================================================ -->
+      <!--  Row 3: Backend Microservices  y=150~200                     -->
+      <!-- ============================================================ -->
+      <rect x="20" y="150" width="360" height="50" rx="8" fill="#2ecc71" filter="url(#sh)"/>
+      <text x="200" y="172" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">qdata-server :8080 (&#x6838;&#x5FC3;&#x4E1A;&#x52A1;)</text>
+      <text x="200" y="192" text-anchor="middle" fill="#d5f5e3" font-size="10">&#x6570;&#x636E;&#x5F00;&#x53D1; · &#x5EFA;&#x6A21; · &#x8D44;&#x4EA7; · &#x5143;&#x6570;&#x636E; · API&#x670D;&#x52A1;</text>
+
+      <rect x="405" y="150" width="360" height="50" rx="8" fill="#2ecc71" filter="url(#sh)"/>
+      <text x="585" y="172" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">qdata-quality :8083 (&#x8D28;&#x91CF;&#x68C0;&#x6D4B;)</text>
+      <text x="585" y="192" text-anchor="middle" fill="#d5f5e3" font-size="10">&#x7A3D;&#x67E5;&#x89C4;&#x5219; · &#x6E05;&#x6D17;&#x89C4;&#x5219; · &#x8D28;&#x91CF;&#x62A5;&#x544A;</text>
+
+      <rect x="790" y="150" width="360" height="50" rx="8" fill="#2ecc71" filter="url(#sh)"/>
+      <text x="970" y="172" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">qdata-ai :8087 (AI &#x95EE;&#x6570;)</text>
+      <text x="970" y="192" text-anchor="middle" fill="#d5f5e3" font-size="10">Text2SQL · &#x667A;&#x80FD;&#x56FE;&#x8868; · &#x81EA;&#x7136;&#x8BED;&#x8A00;&#x5206;&#x6790;</text>
+
+      <!-- Framework tags row -->
+      <rect x="20" y="208" width="175" height="22" rx="5" fill="#a3e4bc"/>
+      <text x="107" y="224" text-anchor="middle" fill="#1e8449" font-size="10" font-weight="600">Spring Boot 2.5.15 + JDK 8</text>
+      <rect x="203" y="208" width="145" height="22" rx="5" fill="#a3e4bc"/>
+      <text x="275" y="224" text-anchor="middle" fill="#1e8449" font-size="10" font-weight="600">MyBatis Plus 3.5 · Druid</text>
+      <rect x="356" y="208" width="135" height="22" rx="5" fill="#a3e4bc"/>
+      <text x="423" y="224" text-anchor="middle" fill="#1e8449" font-size="10" font-weight="600">Spring Security 5.7</text>
+      <rect x="500" y="208" width="100" height="22" rx="5" fill="#a3e4bc"/>
+      <text x="550" y="224" text-anchor="middle" fill="#1e8449" font-size="10" font-weight="600">WebSocket</text>
+      <rect x="608" y="208" width="100" height="22" rx="5" fill="#a3e4bc"/>
+      <text x="658" y="224" text-anchor="middle" fill="#1e8449" font-size="10" font-weight="600">MapStruct</text>
+
+      <!-- ============================================================ -->
+      <!--  Connections: backends → storage                             -->
+      <!-- ============================================================ -->
+      <!-- server → MySQL/DM8/Redis/Neo4j -->
+      <line x1="90"  y1="232" x2="90"  y2="282" stroke="#27ae60" stroke-width="2" marker-end="url(#aG)"/>
+      <line x1="200" y1="232" x2="260" y2="282" stroke="#27ae60" stroke-width="2" marker-end="url(#aG)"/>
+      <line x1="280" y1="232" x2="430" y2="282" stroke="#e67e22" stroke-width="2" marker-end="url(#aO)"/>
+      <line x1="160" y1="232" x2="600" y2="282" stroke="#27ae60" stroke-width="2" marker-end="url(#aG)"/>
+      <!-- quality → MongoDB / Redis -->
+      <line x1="500" y1="232" x2="770" y2="282" stroke="#27ae60" stroke-width="2" marker-end="url(#aG)"/>
+      <line x1="660" y1="232" x2="660" y2="282" stroke="#e67e22" stroke-width="2" marker-end="url(#aO)"/>
+      <!-- ai → Redis -->
+      <line x1="970" y1="232" x2="870" y2="282" stroke="#e67e22" stroke-width="2" marker-end="url(#aO)"/>
+
+      <!-- ============================================================ -->
+      <!--  Row 4: Storage  y=284~332                                    -->
+      <!--  Layout: MySQL | DM8 | Redis | Neo4j | MongoDB | RabbitMQ     -->
+      <!--  Each: w=175 gap=10, total = 175*6+10*5 = 1100               -->
+      <!-- ============================================================ -->
+      <rect x="15" y="284" width="170" height="48" rx="8" fill="#e67e22" filter="url(#sh)"/>
+      <text x="100" y="304" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">MySQL 8.0</text>
+      <text x="100" y="322" text-anchor="middle" fill="#fdebd0" font-size="9">&#x4E1A;&#x52A1;&#x4E3B;&#x5E93; (&#x4E8C;&#x9009;&#x4E00;)</text>
+
+      <rect x="195" y="284" width="170" height="48" rx="8" fill="#e67e22" filter="url(#sh)"/>
+      <text x="280" y="304" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">&#x8FBE;&#x68A6; DM8</text>
+      <text x="280" y="322" text-anchor="middle" fill="#fdebd0" font-size="9">&#x56FD;&#x4EA7;&#x4FE1;&#x521B;&#x4E3B;&#x5E93; (&#x4E8C;&#x9009;&#x4E00;)</text>
+
+      <rect x="375" y="284" width="170" height="48" rx="8" fill="#e67e22" filter="url(#sh)"/>
+      <text x="460" y="304" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">Redis 6</text>
+      <text x="460" y="322" text-anchor="middle" fill="#fdebd0" font-size="9">&#x7F13;&#x5B58; · &#x4F1A;&#x8BDD; · Lettuce</text>
+
+      <rect x="555" y="284" width="170" height="48" rx="8" fill="#e67e22" filter="url(#sh)"/>
+      <text x="640" y="304" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">Neo4j 4.4</text>
+      <text x="640" y="322" text-anchor="middle" fill="#fdebd0" font-size="9">&#x56FE;&#x6570;&#x636E;&#x5E93; · &#x6570;&#x636E;&#x8840;&#x7F18;</text>
+
+      <rect x="735" y="284" width="170" height="48" rx="8" fill="#e67e22" filter="url(#sh)"/>
+      <text x="820" y="304" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">MongoDB 4.4</text>
+      <text x="820" y="322" text-anchor="middle" fill="#fdebd0" font-size="9">&#x534A;&#x7ED3;&#x6784;&#x5316; · &#x8D28;&#x91CF;&#x6A21;&#x5757;</text>
+
+      <rect x="915" y="284" width="170" height="48" rx="8" fill="#f39c12" filter="url(#sh)"/>
+      <text x="1000" y="304" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">RabbitMQ 3.12</text>
+      <text x="1000" y="322" text-anchor="middle" fill="#fef9e7" font-size="9">&#x7CFB;&#x7EDF;&#x5F02;&#x6B65;&#x6D88;&#x606F; · &#x89E3;&#x8026;</text>
+
+      <!-- DB_TYPE indicator -->
+      <rect x="25" y="338" width="330" height="18" rx="4" fill="#fef9e7" stroke="#f9e79f"/>
+      <text x="190" y="352" text-anchor="middle" fill="#7d6608" font-size="9">&#x901A;&#x8FC7; DB_TYPE &#x73AF;&#x5883;&#x53D8;&#x91CF;&#x5728; MySQL / DM8 &#x4E4B;&#x95F4;&#x5207;&#x6362;</text>
+
+      <!-- Backends → RabbitMQ dashed lines -->
+      <line x1="360" y1="200" x2="1000" y2="284" stroke="#f39c12" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#aO)"/>
+      <line x1="585" y1="200" x2="1000" y2="284" stroke="#f39c12" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#aO)"/>
+      <line x1="970" y1="200" x2="1000" y2="284" stroke="#f39c12" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#aO)"/>
+
+      <!-- ============================================================ -->
+      <!--  Row 5: Scheduler  y=370~430                                  -->
+      <!-- ============================================================ -->
+      <rect x="15" y="370" width="340" height="58" rx="8" fill="#9b59b6" filter="url(#sh)"/>
+      <text x="185" y="394" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">&#x1F4C5; DolphinScheduler (&#x5B8C;&#x6574;&#x5206;&#x5E03;&#x5F0F;&#x8C03;&#x5EA6;)</text>
+      <text x="185" y="414" text-anchor="middle" fill="#e8daef" font-size="10">API + Master + Worker + Alert</text>
+
+      <!-- DS dependencies -->
+      <rect x="15" y="433" width="170" height="18" rx="4" fill="#e8daef" stroke="#d2b4de"/>
+      <text x="100" y="447" text-anchor="middle" fill="#6c3483" font-size="9">&#x5143;&#x6570;&#x636E;&#x5E93;: PostgreSQL 15</text>
+      <rect x="190" y="433" width="165" height="18" rx="4" fill="#e8daef" stroke="#d2b4de"/>
+      <text x="272" y="447" text-anchor="middle" fill="#6c3483" font-size="9">&#x534F;&#x8C03;: Zookeeper 3.7</text>
+
+      <rect x="380" y="370" width="200" height="40" rx="8" fill="#8e44ad" filter="url(#sh)"/>
+      <text x="480" y="395" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">&#x23F0; Quartz (&#x8F7B;&#x91CF;&#x5185;&#x7F6E;&#x8C03;&#x5EA6;)</text>
+
+      <!-- Swap indicator -->
+      <text x="600" y="394" fill="#95a5a6" font-size="11">&#x2194; &#x4EFB;&#x52A1;&#x53EF;&#x7075;&#x6D3B;&#x5207;&#x6362;&#x8C03;&#x5EA6;&#x5668;</text>
+
+      <!-- DS ↔ RabbitMQ -->
+      <line x1="355" y1="396" x2="1000" y2="332" stroke="#9b59b6" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#aP)"/>
+      <line x1="1000" y1="332" x2="355" y2="396" stroke="#f39c12" stroke-width="1.2" stroke-dasharray="6,3"/>
+
+      <!-- ============================================================ -->
+      <!--  Row 6: ETL + BigData  y=470~540                              -->
+      <!-- ============================================================ -->
+      <line x1="15" y1="465" x2="1185" y2="465" stroke="#dde1e7" stroke-width="1"/>
+      <text x="600" y="484" text-anchor="middle" fill="#95a5a6" font-size="11" font-weight="700">&#x25BC; &#x8C03;&#x5EA6;&#x89E6;&#x53D1; ETL &#x4EFB;&#x52A1;&#x6267;&#x884C; &#x25BC;</text>
+
+      <!-- Trigger arrows -->
+      <line x1="185" y1="451" x2="120" y2="510" stroke="#9b59b6" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#aP)"/>
+      <line x1="185" y1="451" x2="480" y2="510" stroke="#9b59b6" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#aP)"/>
+      <line x1="480" y1="410" x2="120" y2="510" stroke="#8e44ad" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#aP)"/>
+      <line x1="480" y1="410" x2="480" y2="510" stroke="#8e44ad" stroke-width="1.2" stroke-dasharray="6,3" marker-end="url(#aP)"/>
+
+      <!-- DataX -->
+      <rect x="20" y="510" width="220" height="50" rx="8" fill="#e74c3c" filter="url(#sh)"/>
+      <text x="130" y="532" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">DataX (&#x8F7B;&#x91CF;)</text>
+      <text x="130" y="550" text-anchor="middle" fill="#fadbd8" font-size="9">&#x5355;&#x673A;&#x79BB;&#x7EBF;&#x540C;&#x6B65; · Python datax.py</text>
+
+      <!-- Spark -->
+      <rect x="260" y="510" width="320" height="50" rx="8" fill="#c0392b" filter="url(#sh)"/>
+      <text x="420" y="532" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">Spark 3.5 (&#x5206;&#x5E03;&#x5F0F;)</text>
+      <text x="420" y="550" text-anchor="middle" fill="#fadbd8" font-size="9">qdata-etl.jar · Spark SQL · Kafka&#x8FDE;&#x63A5;&#x5668;</text>
+
+      <!-- Flink -->
+      <rect x="600" y="510" width="240" height="50" rx="8" fill="#e67e22" filter="url(#sh)"/>
+      <text x="720" y="532" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">Flink (&#x4EE3;&#x7801;&#x652F;&#x6301;)</text>
+      <text x="720" y="550" text-anchor="middle" fill="#fdebd0" font-size="9">SQL&#x751F;&#x6210; (CDC+JDBC) · &#x8FD0;&#x884C;&#x65F6;&#x5916;&#x7F6E;</text>
+
+      <!-- Hadoop -->
+      <rect x="860" y="510" width="300" height="50" rx="8" fill="#1abc9c" filter="url(#sh)"/>
+      <text x="1010" y="532" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">Hadoop 3.3 (HDFS + YARN)</text>
+      <text x="1010" y="550" text-anchor="middle" fill="#d1f2eb" font-size="9">NameNode · DataNode · RM · NM</text>
+
+      <!-- Spark → HDFS -->
+      <line x1="580" y1="535" x2="860" y2="535" stroke="#1abc9c" stroke-width="2" marker-end="url(#aT)"/>
+
+      <!-- ============================================================ -->
+      <!--  Row 7: ETL → Data Sources  y=580~660                        -->
+      <!-- ============================================================ -->
+      <line x1="130" y1="560" x2="130" y2="600" stroke="#e74c3c" stroke-width="1.5" marker-end="url(#aR)"/>
+      <line x1="420" y1="560" x2="420" y2="600" stroke="#c0392b" stroke-width="1.5" marker-end="url(#aR)"/>
+      <line x1="720" y1="560" x2="720" y2="600" stroke="#e67e22" stroke-width="1.5" marker-end="url(#aO)"/>
+
+      <rect x="15" y="602" width="1170" height="56" rx="8" fill="#2c3e50" filter="url(#sh)"/>
+      <text x="600" y="624" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">&#x1F517; &#x652F;&#x6301;&#x63A5;&#x5165;&#x7684;&#x6570;&#x636E;&#x6E90;&#x7C7B;&#x578B; (DbType &#x679A;&#x4E3E; · 20 &#x79CD;)</text>
+      <text x="600" y="646" text-anchor="middle" fill="#bdc3c7" font-size="10">MySQL · MariaDB · Oracle · PostgreSQL · SQL Server · DM8 · Kingbase8 · DB2 · OSCAR | Hive · HDFS · Doris · ClickHouse · Phoenix(HBase) | MongoDB · Redis | Kafka · RabbitMQ | FTP · OSS</text>
+
+      <!-- ============================================================ -->
+      <!--  Legend                                                      -->
+      <!-- ============================================================ -->
+      <rect x="15" y="670" width="1170" height="32" rx="5" fill="#f8f9fa" stroke="#dde1e7"/>
+      <line x1="30" y1="690" x2="70" y2="690" stroke="#2980b9" stroke-width="2"/>
+      <text x="78" y="694" fill="#555" font-size="10">HTTP</text>
+      <line x1="140" y1="690" x2="180" y2="690" stroke="#27ae60" stroke-width="2"/>
+      <text x="188" y="694" fill="#555" font-size="10">JDBC/DB</text>
+      <line x1="275" y1="690" x2="315" y2="690" stroke="#e67e22" stroke-width="2"/>
+      <text x="323" y="694" fill="#555" font-size="10">MQ/Redis</text>
+      <line x1="420" y1="690" x2="460" y2="690" stroke="#9b59b6" stroke-width="1.5" stroke-dasharray="6,3"/>
+      <text x="468" y="694" fill="#555" font-size="10">&#x8C03;&#x5EA6;&#x89E6;&#x53D1;</text>
+      <line x1="570" y1="690" x2="610" y2="690" stroke="#e74c3c" stroke-width="2"/>
+      <text x="618" y="694" fill="#555" font-size="10">ETL&#x8BFB;&#x5199;</text>
+      <line x1="700" y1="690" x2="740" y2="690" stroke="#1abc9c" stroke-width="2"/>
+      <text x="748" y="694" fill="#555" font-size="10">HDFS/YARN</text>
+      <line x1="840" y1="690" x2="880" y2="690" stroke="#7f8c9b" stroke-width="1.5" stroke-dasharray="6,3"/>
+      <text x="888" y="694" fill="#555" font-size="10">&#x53CD;&#x5411;&#x4EE3;&#x7406;</text>
+      <text x="1060" y="694" fill="#95a5a6" font-size="10">&#x2194; &#x53EF;&#x5207;&#x6362;</text>
+    </svg>
+  </div>
+
+  <!-- ================================================================ -->
+  <!--  Detail Tiers                                                    -->
+  <!-- ================================================================ -->
+  <h2>&#x1F4CB; &#x5206;&#x5C42;&#x8BE6;&#x89E3;</h2>
+
+  <div class="flow-row">
+    <span class="flow-label">&#x8C03;&#x5EA6;&#x5F15;&#x64CE;</span>
+    <span class="flow-item" style="background:#9b59b6;">Quartz &#xFF08;&#x8F7B;&#x91CF;&#x5185;&#x7F6E;&#xFF09;</span>
+    <span class="arrow-side">&#x2194;</span>
+    <span class="flow-item" style="background:#8e44ad;">DolphinScheduler &#xFF08;&#x5B8C;&#x6574;&#x5206;&#x5E03;&#x5F0F;&#xFF09;</span>
+    <span style="color:var(--muted);font-size:12px;margin-left:auto;">&#x6570;&#x636E;&#x5F00;&#x53D1;&#x548C;&#x91C7;&#x96C6;&#x4EFB;&#x52A1;&#x5747;&#x53EF;&#x7075;&#x6D3B;&#x5207;&#x6362;</span>
+  </div>
+
+  <div class="flow-row">
+    <span class="flow-label">ETL &#x6267;&#x884C;&#x5F15;&#x64CE;</span>
+    <span class="flow-item" style="background:#e74c3c;">DataX &#xFF08;&#x8F7B;&#x91CF;&#x5355;&#x673A;&#xFF09;</span>
+    <span class="arrow-side">&#x2194;</span>
+    <span class="flow-item" style="background:#c0392b;">Spark &#xFF08;&#x5206;&#x5E03;&#x5F0F;&#x79BB;&#x7EBF;&#xFF09;</span>
+    <span class="arrow-side">&#x2194;</span>
+    <span class="flow-item" style="background:#e67e22;">Flink &#xFF08;&#x6D41;&#x5F0F;&#xFF0C;SQL &#x751F;&#x6210;&#x652F;&#x6301;&#xFF09;</span>
+    <span style="color:var(--muted);font-size:12px;margin-left:auto;">&#x4EFB;&#x52A1;&#x53EF;&#x7075;&#x6D3B;&#x5207;&#x6362;</span>
+  </div>
+
+  <!-- ======== 1. Frontend ======== -->
+  <div class="tier tier-frontend">
+    <div class="tier-header"><span>&#x1F5A5;&#xFE0F;</span> &#x524D;&#x7AEF;&#x5C55;&#x793A;&#x5C42;</div>
+    <div class="tier-body">
+      <div class="card"><div class="name">Vue 3</div><div class="ver">v3.5.21</div><div class="desc">&#x6E10;&#x8FDB;&#x5F0F;&#x524D;&#x7AEF;&#x6846;&#x67B6;&#xFF0C;Composition API</div><span class="badge badge-core">&#x6838;&#x5FC3;</span></div>
+      <div class="card"><div class="name">Element Plus</div><div class="ver">v2.7.6</div><div class="desc">UI &#x7EC4;&#x4EF6;&#x5E93;</div><span class="badge badge-core">&#x6838;&#x5FC3;</span></div>
+      <div class="card"><div class="name">Vite</div><div class="ver">v5.3.2</div><div class="desc">&#x6784;&#x5EFA;&#x5DE5;&#x5177;</div><span class="badge badge-core">&#x6838;&#x5FC3;</span></div>
+      <div class="card"><div class="name">Pinia</div><div class="ver">v2.1.7</div><div class="desc">&#x72B6;&#x6001;&#x7BA1;&#x7406;</div></div>
+      <div class="card"><div class="name">ECharts</div><div class="ver">v5.5.1</div><div class="desc">&#x53EF;&#x89C6;&#x5316;&#x56FE;&#x8868;</div></div>
+      <div class="card"><div class="name">AntV X6</div><div class="ver">v2.18</div><div class="desc">&#x6D41;&#x7A0B;&#x56FE;&#x7F16;&#x8F91;&#x5668; (ETL/&#x8C03;&#x5EA6;)</div></div>
+      <div class="card"><div class="name">Monaco / CodeMirror</div><div class="desc">SQL &#x7F16;&#x8F91;&#x5668;</div></div>
+    </div>
+  </div>
+
+  <div class="arrow-down">&#x25BC;</div>
+
+  <div class="tier tier-gateway">
+    <div class="tier-header"><span>&#x1F500;</span> &#x7F51;&#x5173; &amp; &#x53CD;&#x5411;&#x4EE3;&#x7406;</div>
+    <div class="tier-body">
+      <div class="card"><div class="name">Nginx</div><div class="ver">v1.24.0</div><div class="desc">Web &#x7F51;&#x5173;&#x3001;&#x53CD;&#x5411;&#x4EE3;&#x7406;&#x3001;&#x8D1F;&#x8F7D;&#x5747;&#x8861;&#x3001;&#x9759;&#x6001;&#x8D44;&#x6E90;</div><span class="badge badge-core">&#x6838;&#x5FC3;</span></div>
+    </div>
+  </div>
+
+  <div class="arrow-down">&#x25BC;</div>
+
+  <div class="tier tier-backend">
+    <div class="tier-header"><span>&#x2699;&#xFE0F;</span> &#x540E;&#x7AEF;&#x5FAE;&#x670D;&#x52A1; (Spring Boot 2.5.15 · JDK 8)</div>
+    <div class="tier-body">
+      <div class="card"><div class="name">qdata-server</div><div class="desc">&#x6838;&#x5FC3;&#x4E1A;&#x52A1;&#xFF1A;&#x6570;&#x636E;&#x5F00;&#x53D1;&#x3001;&#x5EFA;&#x6A21;&#x3001;&#x8D44;&#x4EA7;&#x3001;&#x5143;&#x6570;&#x636E;&#x3001;API &#x670D;&#x52A1;</div><span class="badge badge-core">&#x6838;&#x5FC3;</span></div>
+      <div class="card"><div class="name">qdata-quality</div><div class="desc">&#x6570;&#x636E;&#x8D28;&#x91CF;&#x68C0;&#x6D4B;&#x670D;&#x52A1;</div><span class="badge badge-core">&#x6838;&#x5FC3;</span></div>
+      <div class="card"><div class="name">qdata-ai</div><div class="desc">AI &#x667A;&#x80FD;&#x95EE;&#x6570; (Text2SQL)</div><span class="badge badge-core">&#x6838;&#x5FC3;</span></div>
+      <div class="card"><div class="name">Spring Security</div><div class="ver">v5.7.12</div><div class="desc">&#x8BA4;&#x8BC1;&#x4E0E;&#x6388;&#x6743;</div></div>
+      <div class="card"><div class="name">MyBatis Plus</div><div class="ver">v3.5.3</div><div class="desc">ORM + &#x52A8;&#x6001;&#x591A;&#x6570;&#x636E;&#x6E90;</div></div>
+      <div class="card"><div class="name">Druid</div><div class="ver">v1.2.23</div><div class="desc">&#x8FDE;&#x63A5;&#x6C60; &amp; SQL &#x76D1;&#x63A7;</div></div>
+      <div class="card"><div class="name">WebSocket</div><div class="desc">&#x5B9E;&#x65F6;&#x6D88;&#x606F;&#x63A8;&#x9001;</div></div>
+    </div>
+  </div>
+
+  <div class="arrow-down">&#x25BC;</div>
+
+  <div class="tier tier-storage">
+    <div class="tier-header"><span>&#x1F5C4;&#xFE0F;</span> &#x6570;&#x636E;&#x5B58;&#x50A8;&#x5C42;</div>
+    <div class="tier-body">
+      <div class="card"><div class="name">MySQL</div><div class="ver">v8.0</div><div class="desc">&#x4E1A;&#x52A1;&#x4E3B;&#x5E93;&#xFF08;&#x4E8C;&#x9009;&#x4E00;&#xFF09;</div><span class="badge badge-core">&#x6838;&#x5FC3;</span></div>
+      <div class="card"><div class="name">&#x8FBE;&#x68A6; DM8</div><div class="desc">&#x56FD;&#x4EA7;&#x4FE1;&#x521B;&#x4E3B;&#x5E93;&#xFF08;&#x4E8C;&#x9009;&#x4E00;&#xFF09;</div><span class="badge badge-core">&#x6838;&#x5FC3;</span></div>
+      <div class="card"><div class="name">PostgreSQL</div><div class="ver">v15.2</div><div class="desc">DS &#x5143;&#x6570;&#x636E;&#x5E93; + ETL &#x6570;&#x636E;&#x6E90;&#x652F;&#x6301;</div><span class="badge badge-ds">&#x6570;&#x636E;&#x6E90;</span></div>
+      <div class="card"><div class="name">Redis</div><div class="ver">v6 Alpine</div><div class="desc">&#x7F13;&#x5B58; · &#x4F1A;&#x8BDD; · Lettuce</div><span class="badge badge-core">&#x6838;&#x5FC3;</span></div>
+      <div class="card"><div class="name">MongoDB</div><div class="ver">v4.4</div><div class="desc">&#x534A;&#x7ED3;&#x6784;&#x5316; · &#x8D28;&#x91CF;&#x6A21;&#x5757;</div><span class="badge badge-core">&#x6838;&#x5FC3;</span></div>
+      <div class="card"><div class="name">Neo4j</div><div class="ver">v4.4.40</div><div class="desc">&#x56FE;&#x6570;&#x636E;&#x5E93; · &#x6570;&#x636E;&#x8840;&#x7F18;</div><span class="badge badge-core">&#x6838;&#x5FC3;</span></div>
+    </div>
+  </div>
+
+  <div class="arrow-down">&#x25BC;</div>
+
+  <div class="tier tier-scheduler">
+    <div class="tier-header"><span>&#x23F1;&#xFE0F;</span> &#x4EFB;&#x52A1;&#x8C03;&#x5EA6;&#x5C42;</div>
+    <div class="tier-body">
+      <div class="card"><div class="name">DolphinScheduler</div><div class="desc">&#x5206;&#x5E03;&#x5F0F;&#x53EF;&#x89C6;&#x5316;&#x5DE5;&#x4F5C;&#x6D41; · API+Master+Worker+Alert</div><span class="badge badge-core">&#x5B8C;&#x6574;&#x6A21;&#x5F0F;</span></div>
+      <div class="card"><div class="name">Quartz</div><div class="desc">&#x5185;&#x7F6E;&#x8F7B;&#x91CF;&#x7EA7;&#x8C03;&#x5EA6;&#x5668;</div><span class="badge badge-core">&#x8F7B;&#x91CF;&#x6A21;&#x5F0F;</span></div>
+      <div class="card"><div class="name">Zookeeper</div><div class="ver">v3.7.1</div><div class="desc">DS &#x534F;&#x8C03; &amp; &#x670D;&#x52A1;&#x6CE8;&#x518C;</div><span class="badge badge-info">DS&#x4F9D;&#x8D56;</span></div>
+    </div>
+  </div>
+
+  <div class="arrow-down">&#x25BC;</div>
+
+  <div class="tier tier-mq">
+    <div class="tier-header"><span>&#x1F4E8;</span> &#x6D88;&#x606F;&#x961F;&#x5217;</div>
+    <div class="tier-body">
+      <div class="card"><div class="name">RabbitMQ</div><div class="ver">v3.12 Management</div><div class="desc">&#x7CFB;&#x7EDF;&#x5F02;&#x6B65;&#x4EFB;&#x52A1; · &#x89E3;&#x8026; · &#x624B;&#x52A8;ACK</div><span class="badge badge-core">&#x7CFB;&#x7EDF;MQ</span></div>
+      <div class="card"><div class="name">Kafka</div><div class="desc">ETL &#x6570;&#x636E;&#x6E90;/&#x76EE;&#x6807; (Spark-Kafka &#x8FDE;&#x63A5;&#x5668;)</div><span class="badge badge-ds">ETL&#x6570;&#x636E;&#x6E90;</span></div>
+    </div>
+  </div>
+
+  <div class="arrow-down">&#x25BC;</div>
+
+  <div class="tier tier-bigdata">
+    <div class="tier-header"><span>&#x1F4CA;</span> &#x5927;&#x6570;&#x636E; &amp; &#x8BA1;&#x7B97;&#x5C42;</div>
+    <div class="tier-body">
+      <div class="card"><div class="name">Hadoop HDFS</div><div class="ver">v3.3.6</div><div class="desc">&#x5206;&#x5E03;&#x5F0F;&#x6587;&#x4EF6;&#x7CFB;&#x7EDF; · NN+DN</div><span class="badge badge-core">&#x6838;&#x5FC3;</span></div>
+      <div class="card"><div class="name">YARN</div><div class="desc">&#x8D44;&#x6E90;&#x7BA1;&#x7406; · RM+NM</div><span class="badge badge-core">&#x6838;&#x5FC3;</span></div>
+      <div class="card"><div class="name">Spark</div><div class="ver">v3.5.6</div><div class="desc">&#x79BB;&#x7EBF; ETL · qdata-etl.jar (Scala)</div><span class="badge badge-core">&#x6838;&#x5FC3;</span></div>
+      <div class="card"><div class="name">Flink</div><div class="desc">&#x6D41;/&#x6279; SQL &#x751F;&#x6210; (CDC+JDBC) · &#x8FD0;&#x884C;&#x65F6;&#x5916;&#x7F6E;</div><span class="badge badge-code">&#x4EE3;&#x7801;&#x652F;&#x6301;</span></div>
+    </div>
+  </div>
+
+  <div class="arrow-down">&#x25BC;</div>
+
+  <div class="tier tier-etl">
+    <div class="tier-header"><span>&#x1F504;</span> ETL &#x6570;&#x636E;&#x96C6;&#x6210;</div>
+    <div class="tier-body">
+      <div class="card"><div class="name">DataX</div><div class="desc">&#x5F02;&#x6784;&#x79BB;&#x7EBF;&#x540C;&#x6B65; · Python datax.py</div><span class="badge badge-core">&#x8F7B;&#x91CF;</span></div>
+      <div class="card"><div class="name">Spark ETL</div><div class="desc">&#x5927;&#x89C4;&#x6A21;&#x79BB;&#x7EBF;&#x5904;&#x7406; · qdata-etl (Scala)</div><span class="badge badge-core">&#x5206;&#x5E03;&#x5F0F;</span></div>
+      <div class="card"><div class="name">Flink SQL</div><div class="desc">getFlinkSQL / getFlinkCDCSQL / getFlinkSinkSQL</div><span class="badge badge-code">&#x4EE3;&#x7801;&#x652F;&#x6301;</span></div>
+    </div>
+  </div>
+
+  <div class="arrow-down">&#x25BC;</div>
+
+  <div class="tier tier-ds">
+    <div class="tier-header"><span>&#x1F517;</span> &#x652F;&#x6301;&#x63A5;&#x5165;&#x7684;&#x6570;&#x636E;&#x6E90;&#x7C7B;&#x578B; (DbType &#x679A;&#x4E3E; — 20 &#x79CD;)</div>
+    <div class="tier-body" style="display:block;">
+      <div class="ds-grid">
+        <div class="ds-card relational">MySQL</div>
+        <div class="ds-card relational">MariaDB</div>
+        <div class="ds-card relational">Oracle 11g</div>
+        <div class="ds-card relational">Oracle 12c+</div>
+        <div class="ds-card relational">PostgreSQL</div>
+        <div class="ds-card relational">SQL Server</div>
+        <div class="ds-card relational">&#x8FBE;&#x68A6; DM8</div>
+        <div class="ds-card relational">&#x4EBA;&#x5927;&#x91D1;&#x4ED3; Kingbase8</div>
+        <div class="ds-card relational">DB2</div>
+        <div class="ds-card relational">&#x795E;&#x901A; OSCAR</div>
+        <div class="ds-card bigdata">Hive</div>
+        <div class="ds-card bigdata">HDFS</div>
+        <div class="ds-card bigdata">Doris</div>
+        <div class="ds-card bigdata">ClickHouse</div>
+        <div class="ds-card bigdata">Phoenix (HBase)</div>
+        <div class="ds-card nosql">MongoDB</div>
+        <div class="ds-card nosql">Redis</div>
+        <div class="ds-card stream">Kafka</div>
+        <div class="ds-card mq">RabbitMQ</div>
+        <div class="ds-card storage">FTP</div>
+        <div class="ds-card storage">OSS (&#x963F;&#x91CC;&#x4E91;)</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item"><span class="badge badge-core">&#x6838;&#x5FC3;</span> &#x5DF2;&#x90E8;&#x7F72;&#x7684;&#x6838;&#x5FC3;&#x7EC4;&#x4EF6;</div>
+    <div class="legend-item"><span class="badge badge-ds">&#x6570;&#x636E;&#x6E90;</span> &#x53EF;&#x63A5;&#x5165;&#x7684;&#x6570;&#x636E;&#x6E90;/&#x76EE;&#x6807;</div>
+    <div class="legend-item"><span class="badge badge-code">&#x4EE3;&#x7801;&#x652F;&#x6301;</span> &#x4EE3;&#x7801;&#x5C42;&#x9762;&#x5DF2;&#x5B9E;&#x73B0;&#xFF0C;&#x8FD0;&#x884C;&#x65F6;&#x5916;&#x7F6E;</div>
+    <div class="legend-item"><span class="badge badge-info">DS&#x4F9D;&#x8D56;</span> DolphinScheduler &#x4F9D;&#x8D56;&#x7EC4;&#x4EF6;</div>
+  </div>
+
+  <div class="notes">
+    <h3>&#x1F4CB; &#x5173;&#x952E;&#x8BF4;&#x660E;&#xFF08;&#x4EC5;&#x9650;&#x5F00;&#x6E90;&#x7248;&#xFF09;</h3>
+    <p style="margin-bottom:10px;">&#x672C;&#x56FE;&#x4EC5;&#x53CD;&#x6620; qData <strong>&#x5F00;&#x6E90;&#x7248;</strong>&#x4EE3;&#x7801;&#x4ED3;&#x5E93;&#x4E2D;&#x5B9E;&#x9645;&#x5B58;&#x5728;&#x7684;&#x7EC4;&#x4EF6;&#x3002;&#x4EE5;&#x4E0B;&#x4E3A;&#x4E13;&#x4E1A;&#x7248;&#x72EC;&#x6709;&#x3001;&#x5F00;&#x6E90;&#x7248;<strong>&#x4E0D;&#x5305;&#x542B;</strong>&#x7684;&#x529F;&#x80FD;&#xFF1A;&#x6574;&#x5E93;&#x540C;&#x6B65;&#x3001;&#x4E3B;&#x6570;&#x636E;&#x7BA1;&#x7406;&#x3001;&#x6570;&#x636E;&#x5B89;&#x5168;&#x3001;BI &#x53EF;&#x89C6;&#x5316;&#x3001;&#x590D;&#x6742;&#x6570;&#x636E;&#x6CBB;&#x7406;&#x3002;</p>
+    <ol>
+      <li><strong>&#x4E3B;&#x6570;&#x636E;&#x5E93;&#x5207;&#x6362;</strong>&#xFF1A;qData &#x4E1A;&#x52A1;&#x4E3B;&#x5E93;&#x901A;&#x8FC7; <code>DB_TYPE</code> &#x73AF;&#x5883;&#x53D8;&#x91CF;&#x5728; MySQL 8.0 &#x548C;&#x8FBE;&#x68A6; DM8 &#x4E4B;&#x95F4;&#x4E8C;&#x9009;&#x4E00;&#x3002;</li>
+      <li><strong>&#x8C03;&#x5EA6;&#x53CC;&#x6A21;&#x5F0F;</strong>&#xFF1A;&#x6570;&#x636E;&#x5F00;&#x53D1;&#x4EFB;&#x52A1;&#x548C;&#x91C7;&#x96C6;&#x4EFB;&#x52A1;&#x5747;&#x53EF;&#x9009;&#x62E9; Quartz&#xFF08;&#x8F7B;&#x91CF;&#xFF09;&#x6216; DolphinScheduler&#xFF08;&#x5B8C;&#x6574;&#xFF09;&#x3002;</li>
+      <li><strong>ETL &#x4E09;&#x5F15;&#x64CE;</strong>&#xFF1A;DataX&#xFF08;&#x5355;&#x673A;&#x540C;&#x6B65;&#xFF09;&#x3001;Spark&#xFF08;&#x5206;&#x5E03;&#x5F0F;&#x79BB;&#x7EBF;&#xFF09;&#x3001;Flink&#xFF08;SQL &#x751F;&#x6210;&#x652F;&#x6301;&#xFF0C;&#x5305;&#x542B; CDC+JDBC&#xFF0C;&#x8FD0;&#x884C;&#x65F6;&#x5916;&#x7F6E;&#xFF09;&#x3002;</li>
+      <li><strong>Kafka</strong>&#xFF1A;&#x4F5C;&#x4E3A; ETL &#x6570;&#x636E;&#x6E90;/&#x76EE;&#x6807;&#xFF0C;&#x901A;&#x8FC7; Spark Kafka &#x8FDE;&#x63A5;&#x5668;&#x548C; KafkaDialect &#x5B9E;&#x73B0;&#x3002;&#x7CFB;&#x7EDF;&#x7EA7;&#x5F02;&#x6B65;&#x6D88;&#x606F;&#x4EC5;&#x7528; RabbitMQ&#x3002;</li>
+      <li><strong>&#x6570;&#x636E;&#x6E90;</strong>&#xFF1A;DbType &#x679A;&#x4E3E; 20 &#x79CD;&#x3002;MySQL&#x3001;DM8&#x3001;Oracle&#x3001;SQL Server&#x3001;Kingbase8 &#x5DF2;&#x96C6;&#x6210; JDBC &#x9A71;&#x52A8;&#x3002;</li>
+    </ol>
+  </div>
+
+</div>
+
+<script>document.getElementById('date').textContent = new Date().toISOString().slice(0, 10);</script>
+</body>
+</html>

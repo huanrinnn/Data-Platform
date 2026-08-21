@@ -1,0 +1,258 @@
+# Copyright © 2025-present Jiangsu Qiantong Technology Co., Ltd.
+#
+# This file is part of qData Data Middle Platform (Open Source Edition).
+#
+# qData is licensed under Apache License 2.0 with additional qData terms.
+# You may use qData for commercial purposes, but you may not remove, hide,
+# modify, or replace the qData logo, copyright notices, license notices,
+# or attribution information without a separate commercial license.
+#
+# White-label use, OEM distribution, rebranding, or presenting qData as
+# another product requires separate commercial authorization from
+# Jiangsu Qiantong Technology Co., Ltd.
+#
+# Business License: https://community.qdata.tech/business/policy.html
+# See the LICENSE file in the project root for full license information.
+
+qdata:
+  # Name
+  name: qData
+  # Version
+  version: 3.8.8
+  # Copyright year
+  copyrightYear: 2024
+  # File path example (Windows configuration D:/qdata/uploadPath, Linux configuration /home/qdata/uploadPath) -- needs to be consistent with the file module
+  profile: ${user.dir}/upload/ # Storage path
+  # Get ip address switch
+  addressEnabled: false
+  # Verification code type math numerical calculation char character verification
+  captchaType: math
+
+# Development environment configuration
+server:
+  # HTTP port of the server, default is 8083
+  port: 8083
+  servlet:
+    # Application access path
+    context-path: /
+  tomcat:
+    # tomcat URI encoding
+    uri-encoding: UTF-8
+    # The number of queues after the number of connections is full, the default is 100
+    accept-count: 1000
+    threads:
+      # The maximum number of threads in tomcat, the default is 200
+      max: 800
+      # The number of threads that Tomcat starts initializing, the default value is 10
+      min-spare: 100
+
+# Log configuration
+logging:
+  level:
+    tech.qiantong: debug
+    org.springframework: warn
+
+# User configuration
+user:
+  password:
+    # Maximum number of incorrect passwords
+    maxRetryCount: 5
+    # Password lock time (default 10 minutes)
+    lockTime: 10
+    #Universal password will not take effect if it is empty.
+    universalPassword: gfh78h23789#$gfdy845
+
+# Spring configuration
+spring:
+  cache:
+    type: jcache
+    jcache:
+      config: classpath:ehcache.xml
+  thymeleaf:
+    prefix: classpath:/dist/
+    mode: HTML
+    encoding: utf-8
+    cache: false
+  # Resource information
+  messages:
+    # Internationalized resource file path
+    basename: i18n/messages,i18n/log-messages,i18n/quality-messages
+  profiles:
+    active: dev  # The environment activated by default, which can be overridden at startup
+  config:
+    import:
+      - "application-${spring.profiles.active}.yml"
+      - "classpath:application-file-${spring.profiles.active}.yml"
+  # File upload
+  servlet:
+    multipart:
+      # Single file size
+      max-file-size: 3000MB
+      # Set the total uploaded file size
+      max-request-size: 3000MB
+  # Service module
+  devtools:
+    restart:
+      # Hot deployment switch
+      enabled: true
+
+# token configuration
+token:
+  # Token custom identification
+  header: Authorization
+  # Token custom identification
+  rpHeader: token
+  # Token key
+  secret: abcdefghijklmnopqrstuvwxyz
+  # Token validity period (default 30 minutes)
+  expireTime: 600
+
+# MyBatis configuration
+# mybatis:
+  # Search for a specified package alias
+  # typeAliasesPackage: tech.qiantong.**.domain
+  # Configure mapper scanning to find all mapper.xml mapping files
+  # mapperLocations: classpath*:mapper/**/*Mapper.xml
+  # Load global configuration file
+  # configLocation: classpath:mybatis/mybatis-config.xml
+
+# MyBatis Plus configuration
+mybatis-plus:
+  # Search for a specified package alias
+  typeAliasesPackage: tech.qiantong.**.dataobject,tech.qiantong.**.dataobject.assetchild, tech.qiantong.**.domain
+  # Configure mapper scanning to find all mapper.xml mapping files
+  mapperLocations: classpath*:mapper/**/*Mapper.xml
+  # Load global configuration file
+  configLocation: classpath:mybatis/mybatis-config.xml
+  global-config:
+    # Close the Banner of MyBatis-Plus
+    banner: false
+    db-config:
+      # Primary key type AUTO auto-increment NONE empty INPUT user input ASSIGN_ID snowflake ASSIGN_UUID unique UUID
+      idType: AUTO
+      # Global tombstone field name
+      logic-delete-field: delFlag
+      # Logical deleted value (default is 1)
+      logic-delete-value: 1
+      # Logical undeleted value (default 0)
+      logic-not-delete-value: 0
+      # Field validation strategy for insert, field validation strategy during insert IGNORED ignore NOT_NULL non-NULL NOT_EMPTY non-empty DEFAULT default NEVER do not join SQL
+      insertStrategy: NOT_NULL
+      # Field validation strategy update, field validation strategy during update
+      updateStrategy: NOT_NULL
+      # Field validation strategy for select, the field validation strategy during select is wrapper based on the where condition generated by the internal entity
+      where-strategy: NOT_NULL
+
+mybatis-plus-join:
+  # Whether to print mybatis plus join banner, default true
+  banner: false
+  # Globally enable logical deletion of secondary tables, default true. After closing, the related query will not add the logical deletion of the secondary table.
+  sub-table-logic: true
+  # Interceptor MappedStatement cache, default true
+  ms-cache: true
+  # Table alias (default t)
+  table-alias: t
+  # The position of the logical deletion condition of the secondary table, supports WHERE and ON, and defaults to ON
+  logic-del-type: on
+
+# PageHelper paging plug-in
+pagehelper:
+  helperDialect: mysql
+  supportMethodsArguments: true
+  params: count=countSql
+
+# Prevent XSS attacks
+xss:
+  # Filter switch
+  enabled: true
+  # Exclude links (separate multiple with commas)
+  excludes: /system/notice
+  # Matching link
+  urlPatterns: /system/*,/monitor/*,/tool/*
+
+# Swagger group configuration
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'system'
+      paths-to-match: '/**'
+      packages-to-scan: tech.qiantong.qdata.module.system.controller
+    - group: 'example'
+      paths-to-match: '/**'
+      packages-to-scan: tech.qiantong.qdata.module.example.controller
+    - group: 'ai'
+      paths-to-match: '/**'
+      packages-to-scan: tech.qiantong.qdata.module.ai.controller
+# Swagger enhanced configuration
+knife4j:
+  enable: true
+  documents:
+    -
+      group: 2.x Version
+      name: API Signature
+      locations: classpath:sign/*
+  setting:
+    language: zh-CN
+    enable-swagger-models: true
+    enable-document-manage: true
+    swagger-model-name: Model List
+    enable-version: false
+    enable-reload-cache-parameter: false
+    enable-after-script: true
+    enable-filter-multipart-api-method-type: POST
+    enable-filter-multipart-apis: false
+    enable-request-cache: true
+    enable-host: false
+    enable-host-text: 127.0.0.1:8083
+    enable-home-custom: true
+    home-custom-path: classpath:markdown/home.md
+    enable-search: false
+    enable-footer: false
+    enable-footer-custom: true
+    footer-custom-content: Apache License 2.0 | Copyright  2025-[Jiangsu Qiantong Technology Co., Ltd.])
+    enable-dynamic-parameter: false
+    enable-debug: true
+    enable-open-api: true
+    enable-group: true
+  cors: false
+  production: false
+  basic:
+    enable: true
+    username: test
+    password: 12313
+
+##Access address of workflow module
+flyflow:
+  url: http://127.0.0.1:26859/
+
+#The ID generator is used for future applications of distributed unique IDs.
+#Work machine ID (0~31)
+id.workerId: 1
+#Data center ID (0~31)
+id.datacenterId: 1
+
+
+minidao:
+  base-package: org.jeecg.modules.jmreport.*,org.jeecg.modules.drag.*
+
+jeecg :
+  jmreport:
+    #Multi-tenant mode, the default value is empty (created: isolated by creator, tenant: isolated by tenant) (v1.6.2+ new)
+    saasMode: created
+    # Platform online security configuration (v1.6.2+ new)
+    firewall:
+      # Data source security (when turned on, the use of platform data sources, SQL parsing, select * query, and testing of whether the data source connection is correct are prohibited)
+      # Under data source security, reserved roles have permission to use select * and test data source links.
+      dataSourceSafe: false
+      # Low-code development mode (dev: development mode, prod: release mode turns off report design, reserved roles admin and lowdeveloper can be designed, prodsf: release safety mode completely turns off report design)
+      lowCodeMode: dev
+      # The intranet IP whitelist in the api data set can only send requests to the intranet servers with the whitelist set in release mode.
+      apiDsIpWhite:
+        - 192.168.0.0/24
+      # SQL injection check level (strict: strict, basic: simple verification, none: no verification)
+      sqlInjectionLevel: none

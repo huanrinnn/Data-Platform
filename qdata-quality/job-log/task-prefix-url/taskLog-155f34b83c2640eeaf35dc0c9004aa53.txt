@@ -1,0 +1,28 @@
+  2026-08-17 19:25:52Task execution started
+  2026-08-17 19:25:52Quality task - query triggered quality task info: DppQualityTaskRespVO(id=17, taskName=DWD-πÀøÕ_dwd_customer_profile_20260817191354, catCode=-1, contact=null, contactId=, contactNumber=null, status=0, description=, priority=medium, workerGroup=default, retryTimes=0, retryInterval=0, delayTime=0, validFlag=true, delFlag=false, strategy=PARALLEL, cycle=0 0 0 * * ?, createBy=Œ‚Õ¨, creatorId=2, createTime=Mon Aug 17 19:14:21 CST 2026, updateBy=Œ‚Õ¨, updaterId=null, updateTime=Mon Aug 17 19:25:50 CST 2026, assetFlag=1, assetId=41, dppQualityTaskObjSaveReqVO=null, dppQualityTaskEvaluateRespVOS=null, taskObjNum=null, taskEvaluateNum=null, lastExecuteTime=null)
+  2026-08-17 19:25:52Quality task - generated batch number: 20260817192552
+  2026-08-17 19:25:53Quality task - created task log, first create log then execute: 750
+  2026-08-17 19:25:53Quality task - start querying datasource list
+  2026-08-17 19:25:53Quality task - datasource list count: 1
+  2026-08-17 19:25:53Quality task - grouping by datasource
+  2026-08-17 19:25:53Quality task - grouping completed, total: 1 group(s)
+  2026-08-17 19:25:53Quality task - getting datasource connection info
+  2026-08-17 19:25:53Quality task - datasource info obtained, preparing database connection. Datasource name: platform_ods_3306, datasource ID: 13
+  2026-08-17 19:25:53Quality task - datasource connection succeeded.
+  2026-08-17 19:25:53Quality task - fetching quality rules for this datasource.
+  2026-08-17 19:25:53Quality task - processing each quality rule for this datasource.
+  2026-08-17 19:25:53Quality task - rule prepared, getting column info.
+  2026-08-17 19:25:53Quality task - column info set, preparing to execute rule.
+  2026-08-17 19:25:53Quality task - executing rule task.
+  2026-08-17 19:25:53Quality task - executing rule, rule ID: 41, rule type: NOT_NULL_VALIDATION
+  2026-08-17 19:25:53Quality task - getting SQL generator and generating SQL script.
+  2026-08-17 19:25:53Quality task - SQL generated, CheckSQL: SELECT COUNT(*) AS totalCount, COUNT(CASE WHEN (full_name IS NULL) THEN 1 END) AS errorCount FROM dwd_customer_profile, ErrorSQL: SELECT * FROM dwd_customer_profile WHERE (full_name IS NULL)
+  2026-08-17 19:25:53Quality task - executing validation SQL.
+  2026-08-17 19:25:53Quality task - validation SQL executed, error count: 0, total count: 8
+  2026-08-17 19:25:53Quality task - querying error details.
+  2026-08-17 19:25:53Quality task - error detail query completed, total: 0 records.
+  2026-08-17 19:25:53Quality task - writing error data to MongoDB.
+  2026-08-17 19:25:53Quality task - MongoDB write completed.
+  2026-08-17 19:25:53Quality task - rule execution completed, building result object.
+  2026-08-17 19:25:53Quality task - rule task completed.
+  2026-08-17 19:25:53Task ended

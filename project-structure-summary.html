@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>qData 项目结构总览</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --bg-soft: #11182d;
+      --card: #151d34;
+      --card-2: #1a2440;
+      --text: #e8edf8;
+      --muted: #aab6d3;
+      --accent: #72e3c1;
+      --accent-2: #7aa7ff;
+      --line: rgba(255, 255, 255, 0.1);
+      --code: #0f1629;
+      --warn: #ffd166;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background:
+        radial-gradient(circle at top left, rgba(122, 167, 255, 0.18), transparent 26%),
+        radial-gradient(circle at 90% 10%, rgba(114, 227, 193, 0.12), transparent 22%),
+        linear-gradient(180deg, #0a0f1c 0%, #0b1020 100%);
+      color: var(--text);
+      font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+      line-height: 1.65;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(122, 167, 255, 0.16), rgba(114, 227, 193, 0.12));
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 32px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -120px -120px auto;
+      width: 260px;
+      height: 260px;
+      background: radial-gradient(circle, rgba(114, 227, 193, 0.35), transparent 65%);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--muted);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+    }
+
+    h1 {
+      margin: 14px 0 10px;
+      font-size: clamp(30px, 4vw, 46px);
+      line-height: 1.12;
+      letter-spacing: -0.02em;
+    }
+
+    .subtitle {
+      max-width: 920px;
+      color: var(--muted);
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .grid {
+      display: grid;
+      gap: 18px;
+      margin-top: 18px;
+      grid-template-columns: repeat(12, 1fr);
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .span-12 { grid-column: span 12; }
+    .span-8 { grid-column: span 8; }
+    .span-6 { grid-column: span 6; }
+    .span-4 { grid-column: span 4; }
+
+    @media (max-width: 960px) {
+      .span-8, .span-6, .span-4 { grid-column: span 12; }
+      .hero { padding: 24px; }
+    }
+
+    .section-title {
+      margin: 0 0 14px;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title .bar {
+      width: 10px;
+      height: 22px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--accent), var(--accent-2));
+      flex: 0 0 auto;
+    }
+
+    .meta-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 0;
+    }
+
+    .meta-item {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+
+    .meta-item .label {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .meta-item .value {
+      font-weight: 600;
+    }
+
+    pre {
+      margin: 0;
+      padding: 18px;
+      border-radius: 16px;
+      background: var(--code);
+      overflow: auto;
+      border: 1px solid var(--line);
+      color: #dbe5ff;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .tag-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(122, 167, 255, 0.12);
+      border: 1px solid rgba(122, 167, 255, 0.22);
+      color: #dce7ff;
+      font-size: 12px;
+    }
+
+    details {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+
+    details + details {
+      margin-top: 12px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    summary::marker {
+      color: var(--accent);
+    }
+
+    ul {
+      margin: 10px 0 0 20px;
+      padding: 0;
+      color: var(--muted);
+    }
+
+    li + li {
+      margin-top: 6px;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+    }
+
+    .table th,
+    .table td {
+      text-align: left;
+      vertical-align: top;
+      padding: 14px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .table th {
+      background: rgba(255,255,255,0.05);
+      color: #f1f5ff;
+      font-weight: 700;
+    }
+
+    .table td {
+      color: var(--muted);
+      background: rgba(255,255,255,0.02);
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 10px;
+    }
+
+    .footer {
+      margin-top: 18px;
+      color: var(--muted);
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .highlight {
+      color: var(--warn);
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="eyebrow">qData Repository Map</div>
+      <h1>qData 项目结构总览</h1>
+      <p class="subtitle">
+        这份页面把仓库拆成“后端聚合、业务模块、公共底座、前端工程、独立子服务、部署资源”几层，
+        方便你在改功能、查入口、找模块时快速定位。
+      </p>
+      <div class="tag-row">
+        <span class="tag">Maven 多模块</span>
+        <span class="tag">Spring Boot 后端</span>
+        <span class="tag">Vue 3 前端</span>
+        <span class="tag">ETL / 质量 / AI 独立能力</span>
+        <span class="tag">Docker + SQL 初始化</span>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="card span-6">
+        <h2 class="section-title"><span class="bar"></span>仓库骨架</h2>
+        <pre>D:\qData-develop
+├─ qdata-framework/      公共基础设施层
+├─ qdata-module-*/       业务域模块层
+├─ qdata-server/         后端启动入口
+├─ qdata-ui/             Vue 3 前端
+├─ qdata-etl/            ETL 引擎/工具
+├─ qdata-quality/        数据质量能力
+├─ qdata-api-ds/         API / 调度相关能力
+├─ qdata-ai/             AI 服务
+├─ sql/                  初始化与升级脚本
+├─ docker/               容器化部署配置
+├─ docs/                 文档
+└─ datax/                DataX 相关资源</pre>
+        <p class="note">如果你只想先摸清项目脉络，建议从 <span class="highlight">qdata-server</span>、<span class="highlight">qdata-framework</span> 和 <span class="highlight">qdata-ui</span> 三块开始。</p>
+      </section>
+
+      <section class="card span-6">
+        <h2 class="section-title"><span class="bar"></span>关键入口</h2>
+        <div class="meta-list">
+          <div class="meta-item">
+            <span class="label">后端根 pom</span>
+            <span class="value">/pom.xml</span>
+          </div>
+          <div class="meta-item">
+            <span class="label">后端启动类</span>
+            <span class="value">qdata-server / QDataApplication.java</span>
+          </div>
+          <div class="meta-item">
+            <span class="label">前端入口</span>
+            <span class="value">qdata-ui / src / main.js</span>
+          </div>
+          <div class="meta-item">
+            <span class="label">前端路由</span>
+            <span class="value">qdata-ui / src / router / index.js</span>
+          </div>
+        </div>
+        <p class="note">后端是 Spring Boot 启动壳，前端是 Vite + Vue 3 工程，两个入口最值得先记住。</p>
+      </section>
+
+      <section class="card span-12">
+        <h2 class="section-title"><span class="bar"></span>后端分层</h2>
+        <table class="table">
+          <thead>
+            <tr>
+              <th style="width: 20%;">层级</th>
+              <th style="width: 40%;">目录 / 模块</th>
+              <th>说明</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>公共底座</td>
+              <td>qdata-framework</td>
+              <td>放通用能力：配置、安全、缓存、定时任务、文件、MyBatis、公共工具等。</td>
+            </tr>
+            <tr>
+              <td>业务模块</td>
+              <td>qdata-module-system / att / da / dp / dpp / ds / dm / mc / dg / ai</td>
+              <td>按业务域拆分，每个模块通常再分 api 和 biz，便于独立开发与复用。</td>
+            </tr>
+            <tr>
+              <td>统一启动</td>
+              <td>qdata-server</td>
+              <td>真正的后端运行入口，负责把各业务模块拼装成一个服务。</td>
+            </tr>
+            <tr>
+              <td>独立能力</td>
+              <td>qdata-etl / qdata-quality / qdata-api-ds / qdata-ai</td>
+              <td>这些更像独立子工程，负责 ETL、质量校验、API 调度、AI 能力等。</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card span-8">
+        <h2 class="section-title"><span class="bar"></span>前端结构</h2>
+        <details open>
+          <summary>qdata-ui / src 的核心目录</summary>
+          <ul>
+            <li><strong>api</strong>：接口封装</li>
+            <li><strong>assets</strong>：静态资源</li>
+            <li><strong>components</strong>：通用组件</li>
+            <li><strong>composables</strong>：组合式逻辑</li>
+            <li><strong>directive</strong>：自定义指令</li>
+            <li><strong>i18n / locales</strong>：多语言</li>
+            <li><strong>layout</strong>：整体布局</li>
+            <li><strong>plugins</strong>：插件</li>
+            <li><strong>router</strong>：路由</li>
+            <li><strong>store</strong>：状态管理</li>
+            <li><strong>utils</strong>：工具函数</li>
+            <li><strong>views</strong>：页面</li>
+          </ul>
+        </details>
+        <details>
+          <summary>views 里常见的业务域</summary>
+          <ul>
+            <li><strong>sys</strong>：系统管理、登录、权限、菜单、监控等</li>
+            <li><strong>da</strong>：数据资产、数据源、质量、查询等</li>
+            <li><strong>dpp</strong>：集成/任务相关页面</li>
+            <li><strong>mc</strong>：元数据相关页面</li>
+            <li><strong>att</strong>：标签、规则、主题等</li>
+            <li><strong>dm</strong>：数据建模</li>
+            <li><strong>ai</strong>：AI 相关页面</li>
+          </ul>
+        </details>
+      </section>
+
+      <section class="card span-4">
+        <h2 class="section-title"><span class="bar"></span>快速导航</h2>
+        <details open>
+          <summary>改后端功能时先看哪里</summary>
+          <ul>
+            <li>先找对应的 `qdata-module-*`</li>
+            <li>再看 `biz` 包里的 controller / service / mapper</li>
+            <li>公共依赖一般回到 `qdata-framework`</li>
+          </ul>
+        </details>
+        <details>
+          <summary>改前端页面时先看哪里</summary>
+          <ul>
+            <li>先找 `qdata-ui/src/views/...`</li>
+            <li>路由在 `src/router/index.js`</li>
+            <li>共享逻辑常在 `src/utils` 或 `src/store`</li>
+          </ul>
+        </details>
+        <details>
+          <summary>部署相关先看哪里</summary>
+          <ul>
+            <li>`sql/`：初始化和升级脚本</li>
+            <li>`docker/`：容器化配置</li>
+            <li>`docs/`：部署说明</li>
+            <li>`datax/`：DataX 相关脚本</li>
+          </ul>
+        </details>
+      </section>
+
+      <section class="card span-12">
+        <h2 class="section-title"><span class="bar"></span>一句话总结</h2>
+        <p style="margin:0;color:var(--muted);">
+          这个仓库的主线很清晰：<strong style="color:var(--text);">`qdata-framework` 提供底座，`qdata-module-*` 承载业务，`qdata-server` 负责启动装配，`qdata-ui` 负责页面呈现，`qdata-etl / qdata-quality / qdata-ai` 负责专项能力。</strong>
+          如果你下一步要深入某个功能，先按“业务域”定位，再向下找 controller、service、mapper 或 Vue 页面，效率最高。
+        </p>
+      </section>
+    </div>
+
+    <div class="footer">
+      生成时间：2026-07-27 · 文件：project-structure-summary.html
+    </div>
+  </div>
+</body>
+</html>

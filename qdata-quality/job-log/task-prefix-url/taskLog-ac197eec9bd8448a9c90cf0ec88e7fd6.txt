@@ -1,0 +1,42 @@
+  2026-08-18 12:28:16Task execution started
+  2026-08-18 12:28:17Quality task - query triggered quality task info: DppQualityTaskRespVO(id=19, taskName=数据质量任务, catCode=VIRTUAL_APP_QUALITY, contact=null, contactId=1, contactNumber=null, status=0, description=, priority=high, workerGroup=default, retryTimes=0, retryInterval=0, delayTime=0, validFlag=true, delFlag=false, strategy=PARALLEL, cycle=0 * * * * ?, createBy=吴同, creatorId=2, createTime=Tue Aug 18 11:52:04 CST 2026, updateBy=吴同, updaterId=null, updateTime=Tue Aug 18 12:28:09 CST 2026, assetFlag=0, assetId=null, dppQualityTaskObjSaveReqVO=null, dppQualityTaskEvaluateRespVOS=null, taskObjNum=null, taskEvaluateNum=null, lastExecuteTime=null)
+  2026-08-18 12:28:18Quality task - generated batch number: 20260818122817
+  2026-08-18 12:28:19Quality task - created task log, first create log then execute: 753
+  2026-08-18 12:28:19Quality task - start querying datasource list
+  2026-08-18 12:28:19Quality task - datasource list count: 7
+  2026-08-18 12:28:19Quality task - grouping by datasource
+  2026-08-18 12:28:19Quality task - grouping completed, total: 1 group(s)
+  2026-08-18 12:28:19Quality task - getting datasource connection info
+  2026-08-18 12:28:19Quality task - datasource info obtained, preparing database connection. Datasource name: platform_ods_3306, datasource ID: 13
+  2026-08-18 12:28:20Quality task - datasource connection succeeded.
+  2026-08-18 12:28:20Quality task - fetching quality rules for this datasource.
+  2026-08-18 12:28:20Quality task - processing each quality rule for this datasource.
+  2026-08-18 12:28:20Quality task - rule prepared, getting column info.
+  2026-08-18 12:28:20Quality task - column info set, preparing to execute rule.
+  2026-08-18 12:28:20Quality task - executing rule task.
+  2026-08-18 12:28:20Quality task - executing rule, rule ID: 43, rule type: NOT_NULL_VALIDATION
+  2026-08-18 12:28:20Quality task - getting SQL generator and generating SQL script.
+  2026-08-18 12:28:20Quality task - SQL generated, CheckSQL: SELECT COUNT(*) AS totalCount, COUNT(CASE WHEN (full_name IS NULL) THEN 1 END) AS errorCount FROM ods_app_customers, ErrorSQL: SELECT * FROM ods_app_customers WHERE (full_name IS NULL)
+  2026-08-18 12:28:20Quality task - executing validation SQL.
+  2026-08-18 12:28:20Quality task - validation SQL executed, error count: 0, total count: 8
+  2026-08-18 12:28:20Quality task - querying error details.
+  2026-08-18 12:28:20Quality task - error detail query completed, total: 0 records.
+  2026-08-18 12:28:20Quality task - writing error data to MongoDB.
+  2026-08-18 12:28:20Quality task - MongoDB write completed.
+  2026-08-18 12:28:20Quality task - rule execution completed, building result object.
+  2026-08-18 12:28:20Quality task - rule task completed.
+  2026-08-18 12:28:20Quality task - rule prepared, getting column info.
+  2026-08-18 12:28:20Quality task - column info set, preparing to execute rule.
+  2026-08-18 12:28:20Quality task - executing rule task.
+  2026-08-18 12:28:20Quality task - executing rule, rule ID: 44, rule type: CHARACTER_VALIDATION
+  2026-08-18 12:28:20Quality task - getting SQL generator and generating SQL script.
+  2026-08-18 12:28:20Quality task - SQL generated, CheckSQL: SELECT COUNT(*) AS totalCount, COUNT(CASE WHEN ((phone is null or not (REGEXP_LIKE(CAST(phone AS CHAR CHARACTER SET utf8mb4), '^1[3-9][0-9]{9}$', 'c')))) THEN 1 END) AS errorCount FROM ods_app_customers, ErrorSQL: SELECT * FROM ods_app_customers WHERE ((phone is null or not (REGEXP_LIKE(CAST(phone AS CHAR CHARACTER SET utf8mb4), '^1[3-9][0-9]{9}$', 'c'))))
+  2026-08-18 12:28:20Quality task - executing validation SQL.
+  2026-08-18 12:28:20Quality task - validation SQL executed, error count: 2, total count: 8
+  2026-08-18 12:28:20Quality task - querying error details.
+  2026-08-18 12:28:20Quality task - error detail query completed, total: 2 records.
+  2026-08-18 12:28:20Quality task - writing error data to MongoDB.
+  2026-08-18 12:28:21Quality task - MongoDB write completed.
+  2026-08-18 12:28:21Quality task - rule execution completed, building result object.
+  2026-08-18 12:28:21Quality task - rule task completed.
+  2026-08-18 12:28:21Task ended

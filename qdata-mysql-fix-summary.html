@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>qData MySQL 连接修复总结</title>
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --accent-2: #16a34a;
+      --warn: #b45309;
+      --border: #e5e7eb;
+      --shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 32%),
+        radial-gradient(circle at top right, rgba(22, 163, 74, 0.08), transparent 28%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+    }
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 40px 20px 56px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1d4ed8 52%, #2563eb 100%);
+      color: #fff;
+      border-radius: 24px;
+      padding: 34px 32px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -80px;
+      top: -80px;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+    }
+    .kicker {
+      display: inline-block;
+      padding: 6px 12px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 999px;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      margin-bottom: 14px;
+      color: rgba(255,255,255,0.92);
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 34px;
+      line-height: 1.2;
+    }
+    .subtitle {
+      margin: 0;
+      max-width: 860px;
+      color: rgba(255,255,255,0.88);
+      font-size: 16px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+      margin-top: 18px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 22px 22px 20px;
+    }
+    .span-12 { grid-column: span 12; }
+    .span-6 { grid-column: span 6; }
+    .span-4 { grid-column: span 4; }
+    h2 {
+      font-size: 20px;
+      margin: 0 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    h2 .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+      flex: 0 0 auto;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .pill {
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      background: #eff6ff;
+      color: var(--accent);
+      border: 1px solid #dbeafe;
+    }
+    .pill.green {
+      background: #ecfdf5;
+      color: var(--accent-2);
+      border-color: #bbf7d0;
+    }
+    .pill.warn {
+      background: #fffbeb;
+      color: var(--warn);
+      border-color: #fde68a;
+    }
+    ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+    li + li { margin-top: 8px; }
+    .section-title {
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .checklist li {
+      margin-top: 8px;
+    }
+    code {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-family: Consolas, "SFMono-Regular", Menlo, monospace;
+      font-size: 0.95em;
+    }
+    pre {
+      margin: 0;
+      padding: 16px;
+      background: #0b1020;
+      color: #e5e7eb;
+      border-radius: 16px;
+      overflow: auto;
+      border: 1px solid #111827;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .timeline {
+      display: grid;
+      gap: 12px;
+    }
+    .step {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      background: linear-gradient(180deg, #fff, #fbfdff);
+    }
+    .step b {
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+    .footer {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 13px;
+      text-align: center;
+    }
+    @media (max-width: 860px) {
+      .span-6, .span-4 { grid-column: span 12; }
+      .hero { padding: 26px 22px; }
+      h1 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="kicker">qData 本地部署 · MySQL 连接修复总结</div>
+      <h1>默认数据源连接失败的收尾说明</h1>
+      <p class="subtitle">
+        这份说明记录了本次从 DM8 切换到 MySQL 过程中，默认数据源 <code>id=3</code> 连接失败的根因、已完成的修复、验证结果，以及后续重建环境时需要保留的初始化动作。
+      </p>
+      <div class="meta">
+        <span class="pill">日期：2026-07-31</span>
+        <span class="pill green">状态：已修复并验证成功</span>
+        <span class="pill warn">范围：默认数据源 & MySQL 初始化</span>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="card span-6">
+        <h2><span class="dot"></span>问题根因</h2>
+        <div class="section-title">这次失败不是单一原因，而是两层问题叠加：</div>
+        <ul>
+          <li>默认数据源 <code>id=3</code> 连接到的数据库是 <code>dws</code>，但 MySQL 里当时还没有创建这个 schema。</li>
+          <li>之前的连接串和 seed 数据曾经残留过旧配置，导致排查时混入了认证失败、旧账号和旧 URL 参数等历史问题。</li>
+        </ul>
+      </section>
+
+      <section class="card span-6">
+        <h2><span class="dot"></span>已完成修复</h2>
+        <ul class="checklist">
+          <li>默认 MySQL URL 补上了 <code>allowPublicKeyRetrieval=true</code>。</li>
+          <li>默认 4 条数据源种子数据统一改为 <code>qdata</code> 账号。</li>
+          <li>MySQL 初始化脚本补上了 <code>ods</code>、<code>dwd</code>、<code>dws</code>、<code>ads</code> 的自动创建。</li>
+          <li>本机 MySQL 中也已补齐这 4 个 schema，并验证 <code>qdata</code> 可以直接连接 <code>dws</code>。</li>
+        </ul>
+      </section>
+
+      <section class="card span-12">
+        <h2><span class="dot"></span>关键文件</h2>
+        <ul>
+          <li><code>D:\qData-develop\qdata-framework\qdata-common\src\main\java\tech\qiantong\qdata\common\database\constants\DbType.java</code></li>
+          <li><code>D:\qData-develop\qdata-framework\qdata-common\src\main\java\tech\qiantong\qdata\common\database\dialect\MySqlDialect.java</code></li>
+          <li><code>D:\qData-develop\docker\database\mysql\init\init.sql</code></li>
+        </ul>
+      </section>
+
+      <section class="card span-6">
+        <h2><span class="dot"></span>验证结果</h2>
+        <div class="timeline">
+          <div class="step">
+            <b>1. 默认数据源测试</b>
+            <div>重新启动后端后，<code>id=3</code> 的测试连接已成功。</div>
+          </div>
+          <div class="step">
+            <b>2. 手工验证 MySQL</b>
+            <div>已确认 <code>qdata</code> 可以直接连接 <code>dws</code>，证明账号与 schema 均正常。</div>
+          </div>
+          <div class="step">
+            <b>3. 环境一致性</b>
+            <div>初始化脚本和当前数据库状态已对齐，后续重建环境不会再缺少业务库。</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card span-6">
+        <h2><span class="dot"></span>可重复初始化片段</h2>
+        <pre>CREATE DATABASE IF NOT EXISTS `qdata` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `ods`   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `dwd`   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `dws`   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS `ads`   CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;</pre>
+      </section>
+
+      <section class="card span-12">
+        <h2><span class="dot"></span>后续建议</h2>
+        <ul>
+          <li>以后重建 MySQL 容器后，直接执行初始化脚本即可，无需再手工补库。</li>
+          <li>如果再遇到连接失败，优先确认三件事：数据库名、账号、密码。</li>
+          <li>默认数据源 <code>id=1~4</code> 现在已经和 MySQL 版本的环境保持一致。</li>
+        </ul>
+      </section>
+    </div>
+
+    <div class="footer">
+      已完成收尾整理，可直接打开查看。若后续需要，我也可以把这份 HTML 再整理成更适合发给同事的版本。
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,21 @@
+  2026-08-15 15:01:35Task execution started
+  2026-08-15 15:01:35Quality task - query triggered quality task info: DppQualityTaskRespVO(id=14, taskName=ODS-客户_ods_app_customers_20260814172304, catCode=-1, contact=null, contactId=, contactNumber=null, status=0, description=, priority=medium, workerGroup=default, retryTimes=0, retryInterval=0, delayTime=0, validFlag=true, delFlag=false, strategy=PARALLEL, cycle=0 0 0 * * ?, createBy=吴同, creatorId=2, createTime=Fri Aug 14 17:23:48 CST 2026, updateBy=吴同, updaterId=null, updateTime=Fri Aug 14 18:00:51 CST 2026, assetFlag=1, assetId=34, dppQualityTaskObjSaveReqVO=null, dppQualityTaskEvaluateRespVOS=null, taskObjNum=null, taskEvaluateNum=null, lastExecuteTime=null)
+  2026-08-15 15:01:35Quality task - generated batch number: 20260815150135
+  2026-08-15 15:01:35Quality task - created task log, first create log then execute: 715
+  2026-08-15 15:01:35Quality task - start querying datasource list
+  2026-08-15 15:01:35Quality task - datasource list count: 1
+  2026-08-15 15:01:35Quality task - grouping by datasource
+  2026-08-15 15:01:35Quality task - grouping completed, total: 1 group(s)
+  2026-08-15 15:01:35Quality task - getting datasource connection info
+  2026-08-15 15:01:35Quality task - datasource info obtained, preparing database connection. Datasource name: platform_ods_3306, datasource ID: 13
+  2026-08-15 15:01:35Quality task - datasource connection succeeded.
+  2026-08-15 15:01:35Quality task - fetching quality rules for this datasource.
+  2026-08-15 15:01:36Quality task - processing each quality rule for this datasource.
+  2026-08-15 15:01:36Quality task - rule prepared, getting column info.
+  2026-08-15 15:01:36Quality task - column info set, preparing to execute rule.
+  2026-08-15 15:01:36Quality task - executing rule task.
+  2026-08-15 15:01:36Quality task - executing rule, rule ID: 15, rule type: NOT_NULL_VALIDATION
+  2026-08-15 15:01:36Quality task - getting SQL generator and generating SQL script.
+  2026-08-15 15:01:36Quality task - rule execution exception, rule ID: 15, error: Unsupported rule type
+  2026-08-15 15:01:36Quality task - rule task completed.
+  2026-08-15 15:01:36Task ended

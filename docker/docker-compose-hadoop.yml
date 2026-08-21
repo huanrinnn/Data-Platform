@@ -1,0 +1,80 @@
+# Copyright © 2025-present Jiangsu Qiantong Technology Co., Ltd.
+#
+# This file is part of qData Data Middle Platform (Open Source Edition).
+#
+# qData is licensed under Apache License 2.0 with additional qData terms.
+# You may use qData for commercial purposes, but you may not remove, hide,
+# modify, or replace the qData logo, copyright notices, license notices,
+# or attribution information without a separate commercial license.
+#
+# White-label use, OEM distribution, rebranding, or presenting qData as
+# another product requires separate commercial authorization from
+# Jiangsu Qiantong Technology Co., Ltd.
+#
+# Business License: https://community.qdata.tech/business/policy.html
+# See the LICENSE file in the project root for full license information.
+
+version: "3.8"
+
+services:
+  namenode:
+    image: ${QDATA_HUB}/hadoop:3.3.6
+    hostname: namenode
+    restart: always
+    profiles: [ "all", "light", "hadoop", "local" ]
+#    ports:
+#      - "9870:9870"       # NameNode Web UI
+#      - "8020:8020"       # HDFS RPC
+#      - "9000:9000"
+    env_file: .env
+    environment:
+      ENSURE_NAMENODE_DIR: "/tmp/hadoop-root/dfs/name"
+    command: [ "hdfs", "namenode" ]
+    networks:
+      - qdatanet
+
+  datanode:
+    image: ${QDATA_HUB}/hadoop:3.3.6
+    hostname: datanode
+    restart: always
+    profiles: [ "all", "light", "hadoop", "local" ]
+#    ports:
+#      - "9864:9864"
+#      - "9866:9866"
+#      - "9867:9867"
+    env_file: .env
+    command: >
+      /bin/bash -c "
+        hdfs datanode &
+        sleep 10 &&
+        hdfs dfs -mkdir -p /tmp/etl &&
+        hdfs dfs -chmod -R 777 / &&
+        tail -f /dev/null
+      "
+    user: "1000:1000"
+    networks:
+      - qdatanet
+#    volumes:
+#      - ./hadoop/data:/data/dfs # Mount data storage
+
+  resourcemanager:
+    image: ${QDATA_HUB}/hadoop:3.3.6
+    hostname: resourcemanager
+    restart: always
+    profiles: [ "all", "light", "hadoop", "local" ]
+#    ports:
+#      - "8088:8088"       # YARN Web UI
+    env_file: .env
+    command: [ "yarn", "resourcemanager" ]
+    networks:
+      - qdatanet
+
+  nodemanager:
+    image: ${QDATA_HUB}/hadoop:3.3.6
+    hostname: nodemanager
+    env_file: .env
+    restart: always
+    profiles: [ "all", "light", "hadoop", "local" ]
+    command: [ "yarn", "nodemanager" ]
+    networks:
+      - qdatanet

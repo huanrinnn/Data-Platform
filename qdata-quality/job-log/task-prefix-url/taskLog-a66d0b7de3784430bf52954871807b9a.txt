@@ -1,0 +1,37 @@
+  2026-08-15 16:44:29Task execution started
+  2026-08-15 16:44:29Quality task - query triggered quality task info: DppQualityTaskRespVO(id=14, taskName=ODS-客户_ods_app_customers_20260814172304, catCode=-1, contact=null, contactId=0, contactNumber=null, status=0, description=, priority=medium, workerGroup=default, retryTimes=0, retryInterval=0, delayTime=0, validFlag=true, delFlag=false, strategy=PARALLEL, cycle=0 0 0 * * ?, createBy=吴同, creatorId=2, createTime=Fri Aug 14 17:23:48 CST 2026, updateBy=吴同, updaterId=null, updateTime=Sat Aug 15 16:44:15 CST 2026, assetFlag=1, assetId=34, dppQualityTaskObjSaveReqVO=null, dppQualityTaskEvaluateRespVOS=null, taskObjNum=null, taskEvaluateNum=null, lastExecuteTime=null)
+  2026-08-15 16:44:29Quality task - generated batch number: 20260815164429
+  2026-08-15 16:44:29Quality task - created task log, first create log then execute: 722
+  2026-08-15 16:44:29Quality task - start querying datasource list
+  2026-08-15 16:44:29Quality task - datasource list count: 1
+  2026-08-15 16:44:29Quality task - grouping by datasource
+  2026-08-15 16:44:29Quality task - grouping completed, total: 1 group(s)
+  2026-08-15 16:44:29Quality task - getting datasource connection info
+  2026-08-15 16:44:29Quality task - datasource info obtained, preparing database connection. Datasource name: platform_ods_3306, datasource ID: 13
+  2026-08-15 16:44:29Quality task - datasource connection succeeded.
+  2026-08-15 16:44:29Quality task - fetching quality rules for this datasource.
+  2026-08-15 16:44:29Quality task - processing each quality rule for this datasource.
+  2026-08-15 16:44:29Quality task - rule prepared, getting column info.
+  2026-08-15 16:44:29Quality task - column info set, preparing to execute rule.
+  2026-08-15 16:44:29Quality task - executing rule task.
+  2026-08-15 16:44:29Quality task - executing rule, rule ID: 15, rule type: NOT_NULL_VALIDATION
+  2026-08-15 16:44:29Quality task - getting SQL generator and generating SQL script.
+  2026-08-15 16:44:29Quality task - SQL generated, CheckSQL: SELECT COUNT(*) AS totalCount, COUNT(CASE WHEN (full_name IS NULL) THEN 1 END) AS errorCount FROM ods_app_customers, ErrorSQL: SELECT * FROM ods_app_customers WHERE (full_name IS NULL)
+  2026-08-15 16:44:29Quality task - executing validation SQL.
+  2026-08-15 16:44:29Quality task - validation SQL executed, error count: 1, total count: 8
+  2026-08-15 16:44:29Quality task - querying error details.
+  2026-08-15 16:44:29Quality task - error detail query completed, total: 1 records.
+  2026-08-15 16:44:29Quality task - writing error data to MongoDB.
+  2026-08-15 16:44:29Quality task - MongoDB write completed.
+  2026-08-15 16:44:29Quality task - rule execution completed, building result object.
+  2026-08-15 16:44:29Quality task - rule task completed.
+  2026-08-15 16:44:29Quality task - rule prepared, getting column info.
+  2026-08-15 16:44:29Quality task - column info set, preparing to execute rule.
+  2026-08-15 16:44:29Quality task - executing rule task.
+  2026-08-15 16:44:29Quality task - executing rule, rule ID: 16, rule type: CHARACTER_VALIDATION
+  2026-08-15 16:44:29Quality task - getting SQL generator and generating SQL script.
+  2026-08-15 16:44:29Quality task - SQL generated, CheckSQL: SELECT COUNT(*) AS totalCount, COUNT(CASE WHEN ((phone is null or not (BINARY phone REGEXP '^1[3-9][0-9]{9}$'))) THEN 1 END) AS errorCount FROM ods_app_customers, ErrorSQL: SELECT * FROM ods_app_customers WHERE ((phone is null or not (BINARY phone REGEXP '^1[3-9][0-9]{9}$')))
+  2026-08-15 16:44:29Quality task - executing validation SQL.
+  2026-08-15 16:44:29Quality task - rule execution exception, rule ID: 16, error: Character set 'binary' cannot be used in conjunction with 'utf8mb4_0900_ai_ci' in call to regexp_like.
+  2026-08-15 16:44:29Quality task - rule task completed.
+  2026-08-15 16:44:29Task ended

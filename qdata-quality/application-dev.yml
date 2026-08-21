@@ -1,0 +1,11 @@
+spring:
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    database: 0
+    password: J98%FHF#9h@e88h9fre9
+
+file:
+  job:
+    log:
+      qualitytask_prefix_url: D:/qData-develop/qdata-quality/job-log/task-prefix-url

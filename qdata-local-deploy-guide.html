@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>qData 本地混合部署启动顺序与 DataX 注意事项</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --border: #e5e7eb;
+      --success: #16a34a;
+      --warn: #d97706;
+      --danger: #dc2626;
+      --code-bg: #0f172a;
+      --code-text: #e2e8f0;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 64px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+      color: white;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 18px 40px rgba(37, 99, 235, 0.18);
+    }
+
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: 32px;
+      line-height: 1.25;
+    }
+
+    .hero p {
+      margin: 8px 0;
+      opacity: 0.96;
+    }
+
+    .section {
+      margin-top: 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 24px;
+    }
+
+    h3 {
+      margin-top: 24px;
+      margin-bottom: 12px;
+      font-size: 18px;
+    }
+
+    p, li {
+      color: var(--text);
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    .tag.success { background: #dcfce7; color: #166534; }
+    .tag.warn { background: #fef3c7; color: #92400e; }
+    .tag.info { background: #dbeafe; color: #1d4ed8; }
+    .tag.danger { background: #fee2e2; color: #991b1b; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      background: #fff;
+    }
+
+    .card h4 {
+      margin: 0 0 10px;
+      font-size: 16px;
+    }
+
+    ol.steps {
+      padding-left: 22px;
+      margin: 0;
+    }
+
+    ol.steps > li {
+      margin-bottom: 14px;
+      padding-left: 4px;
+    }
+
+    ul.checklist {
+      padding-left: 22px;
+      margin: 8px 0 0;
+    }
+
+    .note {
+      border-left: 4px solid var(--primary);
+      background: #eff6ff;
+      padding: 14px 16px;
+      border-radius: 10px;
+      margin: 14px 0;
+    }
+
+    .warn-box {
+      border-left: 4px solid var(--warn);
+      background: #fff7ed;
+      padding: 14px 16px;
+      border-radius: 10px;
+      margin: 14px 0;
+    }
+
+    .danger-box {
+      border-left: 4px solid var(--danger);
+      background: #fef2f2;
+      padding: 14px 16px;
+      border-radius: 10px;
+      margin: 14px 0;
+    }
+
+    pre {
+      margin: 12px 0 0;
+      padding: 16px;
+      border-radius: 14px;
+      background: var(--code-bg);
+      color: var(--code-text);
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    code {
+      font-family: Consolas, Monaco, monospace;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fafc;
+    }
+
+    .footer {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <h1>qData 本地混合部署启动顺序与 DataX 注意事项</h1>
+      <p>适用场景：本地源码运行 qData，依赖组件通过 Docker 或本机服务提供。</p>
+      <p>当前环境结论：前端、后端、DataX 任务均已验证可运行。</p>
+      <div style="margin-top:16px;">
+        <span class="tag success">前端可启动</span>
+        <span class="tag success">后端可启动</span>
+        <span class="tag success">DataX 已跑通</span>
+        <span class="tag info">Windows 本地环境</span>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>一、最终启动顺序</h2>
+      <p class="muted">建议始终按下面顺序启动，能最大程度减少端口、依赖和配置类问题。</p>
+
+      <ol class="steps">
+        <li>
+          <strong>先启动基础依赖服务</strong>
+          <ul class="checklist">
+            <li>MySQL</li>
+            <li>Redis</li>
+            <li>RabbitMQ</li>
+            <li>如需要，再启动 DM8、DolphinScheduler 等其他依赖</li>
+          </ul>
+          <div class="note">
+            本次本地混合部署里，<strong>qdata-server 启动前必须确保 MySQL 可连</strong>，否则会报 `Communications link failure` 或 `Connection refused`。
+          </div>
+        </li>
+
+        <li>
+          <strong>确认 DataX 本地环境</strong>
+          <p>当前已验证通过的 DataX 目录：</p>
+          <pre><code>D:\qData-develop\datax</code></pre>
+          <p>关键结构必须存在：</p>
+          <pre><code>datax\bin\datax.py
+datax\lib
+datax\plugin
+datax\job</code></pre>
+        </li>
+
+        <li>
+          <strong>启动后端 qdata-server</strong>
+          <pre><code>mvn -f D:\qData-develop\qdata-server\pom.xml -DskipTests clean package
+java -jar D:\qData-develop\qdata-server\target\qdata-server.jar</code></pre>
+          <div class="warn-box">
+            如果 `clean package` 失败并提示无法删除或重命名 `qdata-server.jar`，通常是 Windows 文件占用问题。先关闭旧进程或重启电脑后再试。
+          </div>
+        </li>
+
+        <li>
+          <strong>启动后端 qdata-quality</strong>
+          <pre><code>mvn -f D:\qData-develop\qdata-quality\pom.xml -DskipTests clean package
+java -jar D:\qData-develop\qdata-quality\target\qdata-quality.jar</code></pre>
+        </li>
+
+        <li>
+          <strong>启动前端 qdata-ui</strong>
+          <pre><code>cd D:\qData-develop\qdata-ui
+npm install
+npm run dev</code></pre>
+        </li>
+
+        <li>
+          <strong>进入页面验证</strong>
+          <ul class="checklist">
+            <li>确认前端页面可访问</li>
+            <li>确认后端接口正常</li>
+            <li>确认 DataX 任务可执行</li>
+          </ul>
+        </li>
+      </ol>
+    </section>
+
+    <section class="section">
+      <h2>二、推荐的本地检查清单</h2>
+      <div class="grid">
+        <div class="card">
+          <h4>1. Python</h4>
+          <p>已验证当前环境可用：</p>
+          <pre><code>python --version
+# Python 3.11.9</code></pre>
+        </div>
+        <div class="card">
+          <h4>2. DataX Job 目录</h4>
+          <p>已验证当前目录存在：</p>
+          <pre><code>D:\qData-develop\upload\datax\job</code></pre>
+        </div>
+        <div class="card">
+          <h4>3. MySQL 连通性</h4>
+          <p>已验证当前 DataX 业务库端口：</p>
+          <pre><code>mysql -h 127.0.0.1 -P 3307 -u root -p</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>三、当前这套环境中 DataX 的最终注意事项</h2>
+
+      <h3>1. DataX 必须使用可执行发布包，不要用源码目录直接代替</h3>
+      <div class="danger-box">
+        错误现象：`exitCode 9009`。<br />
+        原因：`datax\bin\datax.py` 不存在，或者 Python 命令不可执行。
+      </div>
+      <p>正确做法：使用带 `bin`、`lib`、`plugin`、`job` 的官方发布包。</p>
+
+      <h3>2. Windows 下建议固定 DataX 配置</h3>
+      <p>当前已验证可用的配置思路：</p>
+      <pre><code>datax:
+  home: D:/qData-develop/datax
+  python-command: python
+  datax-py-path: D:/qData-develop/datax/bin/datax.py
+  lib-dir: D:/qData-develop/datax/lib
+  job-dir: D:/qData-develop/upload/datax/job</code></pre>
+      <p>相比 `${user.dir}`，这种固定路径更稳，更适合 Windows 本地运行。</p>
+
+      <h3>3. rdbmsreader / rdbmswriter 默认不一定自带 MySQL 驱动</h3>
+      <div class="danger-box">
+        错误现象：`No suitable driver found for jdbc:mysql://...`<br />
+        原因：DataX 能启动，但对应插件的 `libs` 目录里没有 MySQL JDBC 驱动。
+      </div>
+      <p>本次已验证需要把 MySQL 驱动放到下面两个目录：</p>
+      <pre><code>D:\qData-develop\datax\plugin\reader\rdbmsreader\libs
+D:\qData-develop\datax\plugin\writer\rdbmswriter\libs</code></pre>
+      <p>本次使用的驱动来源：</p>
+      <pre><code>C:\Users\ZZH20\.m2\repository\mysql\mysql-connector-java\8.0.27\mysql-connector-java-8.0.27.jar</code></pre>
+
+      <h3>4. 任务配置里的 writeMode 不能随意填</h3>
+      <div class="warn-box">
+        本次已验证：当前这套 `rdbmswriter` <strong>不支持</strong> `dppReplace`。
+      </div>
+      <p>错误现象：</p>
+      <pre><code>写入模式(writeMode)配置有误.
+不支持配置参数项 writeMode: dppReplace
+仅使用 insert sql 插入数据</code></pre>
+      <p>当前环境下建议优先使用：</p>
+      <pre><code>insert</code></pre>
+
+      <h3>5. 成功并不代表所有 DataX 模式都兼容</h3>
+      <p>当前确认成功的是：</p>
+      <ul class="checklist">
+        <li>MySQL → MySQL</li>
+        <li>通过 `rdbmsreader` 读取</li>
+        <li>通过 `rdbmswriter` 写入</li>
+        <li>写入模式使用兼容值而非 `dppReplace`</li>
+      </ul>
+      <p>后续如果换别的数据源、别的插件、别的写入模式，仍然可能需要单独验证。</p>
+    </section>
+
+    <section class="section">
+      <h2>四、常见故障与快速判断</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>现象</th>
+            <th>大概率原因</th>
+            <th>处理建议</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>`DataX exitCode: 9009`</td>
+            <td>找不到 `python` 或 `datax.py`</td>
+            <td>检查 `python-command`、`datax-py-path`、DataX 目录结构</td>
+          </tr>
+          <tr>
+            <td>`No suitable driver found`</td>
+            <td>缺少 JDBC 驱动</td>
+            <td>把 MySQL 驱动复制到对应插件 `libs` 目录</td>
+          </tr>
+          <tr>
+            <td>`Communications link failure`</td>
+            <td>数据库没起来或端口不通</td>
+            <td>先确认 MySQL 实际监听端口和账号密码</td>
+          </tr>
+          <tr>
+            <td>`writeMode` 不支持</td>
+            <td>任务参数与当前插件版本不兼容</td>
+            <td>改为当前插件支持的写入模式，例如 `insert`</td>
+          </tr>
+          <tr>
+            <td>Maven 无法删除 jar</td>
+            <td>Windows 文件锁</td>
+            <td>关闭旧进程、关闭占用窗口，必要时重启电脑</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>五、最终建议</h2>
+      <ul class="checklist">
+        <li>保留当前这份可运行的 `datax` 目录，不要轻易覆盖。</li>
+        <li>保留已经补好的 MySQL 驱动 jar，后续迁移环境时一起复制。</li>
+        <li>后续新建 DataX 任务时，先做“小表、小字段、小数据量”验证，再做正式同步。</li>
+        <li>如果页面里有 `writeMode` 选项，优先选择已经验证可用的模式。</li>
+        <li>每次启动顺序尽量固定：依赖服务 → 后端 → 前端 → 任务验证。</li>
+      </ul>
+    </section>
+
+    <div class="footer">
+      本文档根据当前 qData 本地混合部署实测过程整理，可作为后续复用的本地启动与排障参考。
+    </div>
+  </div>
+</body>
+</html>

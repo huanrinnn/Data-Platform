@@ -1,0 +1,98 @@
+# Copyright © 2025-present Jiangsu Qiantong Technology Co., Ltd.
+#
+# This file is part of qData Data Middle Platform (Open Source Edition).
+#
+# qData is licensed under Apache License 2.0 with additional qData terms.
+# You may use qData for commercial purposes, but you may not remove, hide,
+# modify, or replace the qData logo, copyright notices, license notices,
+# or attribution information without a separate commercial license.
+#
+# White-label use, OEM distribution, rebranding, or presenting qData as
+# another product requires separate commercial authorization from
+# Jiangsu Qiantong Technology Co., Ltd.
+#
+# Business License: https://community.qdata.tech/business/policy.html
+# See the LICENSE file in the project root for full license information.
+
+version: "3.8"
+
+services:
+  # qData backend service
+  qdata-api:
+    image: ${QDATA_HUB}/qdata-server-ce:${QDATA_TAG}
+    restart: always
+    profiles: [ "all", "light" ]
+    env_file: .env
+    environment:
+      - TZ=Asia/Shanghai
+#    ports:
+#      - "8080:8080"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./qdata-server/logs:/usr/app/jar/logs
+      - ./qdata-server/upload:/usr/app/jar/upload
+      - ./qdata-server/application-prod.yml:/usr/app/jar/application-prod.yml
+      - ./qdata-server/datax:/usr/app/jar/datax
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    networks:
+      - qdatanet
+
+  # qData quality service
+  qdata-quality:
+    image: ${QDATA_HUB}/qdata-quality-ce:${QDATA_TAG}
+    restart: always
+    profiles: [ "all", "light" ]
+    env_file: .env
+    environment:
+      - TZ=Asia/Shanghai
+#    ports:
+#      - "8083:8083"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./qdata-quality/logs:/usr/app/jar/logs
+      - ./qdata-quality/job-log:/usr/app/jar/job-log
+      - ./qdata-quality/application-prod.yml:/usr/app/jar/application-prod.yml
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    networks:
+      - qdatanet
+
+  # qData backend service
+  qdata-ai:
+    privileged: true
+    image: ${QDATA_HUB}/qdata-ai-ce:${QDATA_TAG}
+    restart: always
+    profiles: [ "all", "light" ]
+    env_file: .env
+    environment:
+      - TZ=Asia/Shanghai
+    #    ports:
+    #      - "8087:8087"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./qdata-ai/logs:/usr/app/jar/logs
+      - ./qdata-ai/application-prod.yml:/usr/app/jar/application-prod.yml
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    networks:
+      - qdatanet
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

@@ -1,0 +1,40 @@
+# Copyright © 2025-present Jiangsu Qiantong Technology Co., Ltd.
+#
+# This file is part of qData Data Middle Platform (Open Source Edition).
+#
+# qData is licensed under Apache License 2.0 with additional qData terms.
+# You may use qData for commercial purposes, but you may not remove, hide,
+# modify, or replace the qData logo, copyright notices, license notices,
+# or attribution information without a separate commercial license.
+#
+# White-label use, OEM distribution, rebranding, or presenting qData as
+# another product requires separate commercial authorization from
+# Jiangsu Qiantong Technology Co., Ltd.
+#
+# Business License: https://community.qdata.tech/business/policy.html
+# See the LICENSE file in the project root for full license information.
+
+include:
+  - path: ./docker-compose-base.yml
+  - path: ./docker-compose-dolphinscheduler.yml
+  - path: ./docker-compose-spark.yml
+  - path: ./docker-compose-qdata.yml
+  - path: ./docker-compose-hadoop.yml
+  - path: ./docker-compose-demo.yml
+
+version: "3.8"
+
+networks:
+  qdatanet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  dolphinscheduler-postgresql:
+  dolphinscheduler-zookeeper:
+  dolphinscheduler-worker-data:
+#  dolphinscheduler-logs:
+#  dolphinscheduler-shared-local:
+#  dolphinscheduler-resource-local:
