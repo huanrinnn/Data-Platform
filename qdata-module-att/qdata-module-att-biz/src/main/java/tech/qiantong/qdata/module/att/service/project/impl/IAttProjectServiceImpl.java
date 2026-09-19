@@ -28,11 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.util.CollectionUtils;
-import tech.qiantong.qdata.api.ds.api.project.DsProjectCreateReqDTO;
-import tech.qiantong.qdata.api.ds.api.project.DsProjectDeleteRespDTO;
-import tech.qiantong.qdata.api.ds.api.project.DsProjectRespDTO;
-import tech.qiantong.qdata.api.ds.api.project.DsProjectUpdateReqDTO;
-import tech.qiantong.qdata.api.ds.api.service.project.IDsProjectService;
 import tech.qiantong.qdata.common.constant.Constants;
 import tech.qiantong.qdata.common.core.domain.entity.SysRole;
 import tech.qiantong.qdata.common.core.domain.entity.SysUser;
@@ -44,6 +39,7 @@ import tech.qiantong.qdata.common.utils.PageUtils;
 import tech.qiantong.qdata.common.utils.SecurityUtils;
 import tech.qiantong.qdata.common.utils.StringUtils;
 import tech.qiantong.qdata.common.utils.object.BeanUtils;
+import tech.qiantong.qdata.common.utils.uuid.IdUtils;
 import tech.qiantong.qdata.module.att.api.project.IAttProjectApi;
 import tech.qiantong.qdata.module.att.api.project.dto.AttProjectReqDTO;
 import tech.qiantong.qdata.module.att.api.project.dto.AttProjectRespDTO;
@@ -93,8 +89,6 @@ public class IAttProjectServiceImpl extends ServiceImpl<AttProjectMapper, AttPro
     private SysUserRoleMapper sysUserRoleMapper;
     @Resource
     private SysRoleMenuMapper sysRoleMenuMapper;
-    @Resource
-    private IDsProjectService dsProjectService;
 
     @Override
     public PageResult<AttProjectDO> getAttProjectPage(AttProjectPageReqVO pageReqVO) {
@@ -115,15 +109,10 @@ public class IAttProjectServiceImpl extends ServiceImpl<AttProjectMapper, AttPro
 
     @Override
     public Long createAttProject(AttProjectSaveReqVO createReqVO) {
-        DsProjectCreateReqDTO dsProjectCreateReqDTO = new DsProjectCreateReqDTO();
-        dsProjectCreateReqDTO.setProjectName(createReqVO.getName());
-        dsProjectCreateReqDTO.setDescription(createReqVO.getDescription());
-        DsProjectRespDTO dsProjectRespDTO = dsProjectService.saveProject(dsProjectCreateReqDTO);
-        if (dsProjectRespDTO.getCode() != 0) {
-            return -1L;
-        }
         AttProjectDO dictType = BeanUtils.toBean(createReqVO, AttProjectDO.class);
-        dictType.setCode(dsProjectRespDTO.getData().getCode().toString());
+        if (StringUtils.isBlank(dictType.getCode())) {
+            dictType.setCode(String.valueOf(IdUtils.generateArtificialId()));
+        }
         try {
             // Create project management data
             attProjectMapper.insert(dictType);
@@ -181,9 +170,7 @@ public class IAttProjectServiceImpl extends ServiceImpl<AttProjectMapper, AttPro
                     sysRoleMenuMapper.batchRoleMenuProjectId(rMenusList);
                 }
             }
-        }catch (Exception e){
-            // If error occurs, delete data from ds
-            dsProjectService.deleteProject(dsProjectRespDTO.getData().getCode());
+        } catch (Exception e) {
             e.printStackTrace();
             // Manual transaction rollback
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
@@ -195,23 +182,12 @@ public class IAttProjectServiceImpl extends ServiceImpl<AttProjectMapper, AttPro
 
     @Override
     public int updateAttProject(AttProjectSaveReqVO updateReqVO) {
-        // Validate
-        DsProjectUpdateReqDTO dsProjectUpdateReqDTO = new DsProjectUpdateReqDTO();
-        dsProjectUpdateReqDTO.setProjectName(updateReqVO.getName());
-        dsProjectUpdateReqDTO.setProjectCode(Long.valueOf(updateReqVO.getCode()));
-        dsProjectUpdateReqDTO.setDescription(updateReqVO.getDescription());
-        DsProjectRespDTO dsProjectRespDTO = dsProjectService.updateProject(dsProjectUpdateReqDTO);
-        if (dsProjectRespDTO.getCode() != 0) {
-            return -1;
-        }
         // Update project
         AttProjectDO updateObj = BeanUtils.toBean(updateReqVO, AttProjectDO.class);
         int i = -1;
         try {
             i = attProjectMapper.updateById(updateObj);
-        }catch (Exception e){
-            // If error occurs, delete data from ds
-            dsProjectService.deleteProject(dsProjectRespDTO.getData().getCode());
+        } catch (Exception e) {
             e.printStackTrace();
             // Manual transaction rollback
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
@@ -227,16 +203,7 @@ public class IAttProjectServiceImpl extends ServiceImpl<AttProjectMapper, AttPro
         if (attProjectUserRelDOList.size() > 0) {
             return -1;
         }
-        List<AttProjectDO> projectDOList = attProjectMapper.selectList(new QueryWrapper<AttProjectDO>().in(!CollectionUtils.isEmpty(idList), "id", idList));
         int i = attProjectMapper.deleteBatchIds(idList);
-        for (AttProjectDO attProjectDO : projectDOList) {
-            DsProjectDeleteRespDTO dsProjectDeleteRespDTO = dsProjectService.deleteProject(Long.valueOf(attProjectDO.getCode()));
-            if (dsProjectDeleteRespDTO.getCode() != 0) {
-                // Manual transaction rollback
-                TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-                return -2;
-            }
-        }
         // Batch delete project
         return i;
     }

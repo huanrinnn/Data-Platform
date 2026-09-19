@@ -210,7 +210,7 @@
                             icon="Delete"
                             @click="handleDelete(scope.row)"
                             v-hasPermi="['system:role:remove']"
-                            v-if="scope.row.roleId !== 1 && scope.row.roleId !== 3"
+                            v-if="scope.row.roleId !== 1"
                             >{{ td('common.button.delete') }}</el-button
                         >
                         <el-popover

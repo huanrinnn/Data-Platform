@@ -382,6 +382,8 @@ const strategyOptions = [
   { value: "DATE_FORMAT_VALIDATION", label: "日期时间格式校验" },
   { value: "GROUP_FIELD_COMPLETENESS", label: "字段组完整性校验" },
   { value: "TIME_ORDER_VALIDATION", label: "时间顺序校验" },
+  { value: "FIELD_COMPARE_VALIDATION", label: "字段比较校验" },
+  { value: "CONDITIONAL_FIELD_VALIDATION", label: "条件字段校验" },
 ];
 const { att_rule_audit_type, att_rule_level, att_rule_audit_q_dimension } =
   proxy.useDict(

@@ -14,6 +14,12 @@ export const findInTree = (tree, id) => {
   return null;
 };
 
+export const formatNameWithAbbr = (name, abbr) => {
+  if (!name) return abbr || "";
+  if (!abbr || String(name).includes(abbr)) return name;
+  return `${name}${abbr}`;
+};
+
 /**
  * Generate table model name
  * @param {Object} options
@@ -114,7 +120,7 @@ export const formatModelName = (options) => {
 };
 
 /**
- * Attribution hierarchy display formatting method for list display (name (English name) / ...)
+ * Attribution hierarchy display formatting method for list display
  * @param {Object} row list row data
  * @param {string} type model type (4 is the application table)
  */
@@ -124,7 +130,7 @@ export const formatHierarchyDisplayName = (row, type) => {
   // 1. Data warehouse stratification
   if (row.dataLayerName) {
     const eng = row.dataLayerEngName || row.dataLayerShortName;
-    parts.push(eng ? `${row.dataLayerName} (${eng})` : row.dataLayerName);
+    parts.push(formatNameWithAbbr(row.dataLayerName, eng));
   }
 
   if (type === "4") {

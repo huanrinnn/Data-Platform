@@ -230,7 +230,16 @@ public class SysDeptServiceImpl implements ISysDeptService
     @Override
     public int insertDept(SysDept dept)
     {
+        if (dept.getParentId() == null || dept.getParentId() == 0L)
+        {
+            dept.setAncestors("0");
+            return deptMapper.insertDept(dept);
+        }
         SysDept info = deptMapper.selectDeptById(dept.getParentId());
+        if (StringUtils.isNull(info))
+        {
+            throw new ServiceException("Parent department does not exist");
+        }
         // If the parent node is not in normal status, child nodes cannot be added
         if (!UserConstants.DEPT_NORMAL.equals(info.getStatus()))
         {
@@ -249,7 +258,8 @@ public class SysDeptServiceImpl implements ISysDeptService
     @Override
     public int updateDept(SysDept dept)
     {
-        SysDept newParentDept = deptMapper.selectDeptById(dept.getParentId());
+        SysDept newParentDept = dept.getParentId() == null || dept.getParentId() == 0L
+                ? null : deptMapper.selectDeptById(dept.getParentId());
         SysDept oldDept = deptMapper.selectDeptById(dept.getDeptId());
         if (StringUtils.isNotNull(newParentDept) && StringUtils.isNotNull(oldDept))
         {
@@ -257,6 +267,11 @@ public class SysDeptServiceImpl implements ISysDeptService
             String oldAncestors = oldDept.getAncestors();
             dept.setAncestors(newAncestors);
             updateDeptChildren(dept.getDeptId(), newAncestors, oldAncestors);
+        }
+        else if (StringUtils.isNotNull(oldDept))
+        {
+            dept.setAncestors("0");
+            updateDeptChildren(dept.getDeptId(), "0", oldDept.getAncestors());
         }
         int result = deptMapper.updateDept(dept);
         if (UserConstants.DEPT_NORMAL.equals(dept.getStatus()) && StringUtils.isNotEmpty(dept.getAncestors())

@@ -219,7 +219,7 @@ import { useProjectStore } from "@/store/project/project";
 import { getDatasourceIcon } from "@/utils/datasource";
 import { treeDataLayer } from "@/api/dm/dataLayer/dataLayer.js";
 import { getToken } from "@/utils/auth.js";
-import { formatHierarchyDisplayName } from "../../../utils/dm/utils";
+import { formatHierarchyDisplayName, formatNameWithAbbr } from "../../../utils/dm/utils";
 import { ref, reactive, getCurrentInstance } from "vue";
 
 const { td } = useDefaultLang();
@@ -257,9 +257,7 @@ function getDataLayerTree() {
         const newItem = { ...item };
         newItem.id = Number(item.id);
         const abbreviation = item.engName || item.shortName;
-        newItem.displayName = abbreviation
-          ? `${item.name} / ${abbreviation}`
-          : item.name;
+        newItem.displayName = formatNameWithAbbr(item.name, abbreviation);
         if (item.children && item.children.length) {
           newItem.children = processTree(item.children);
         }

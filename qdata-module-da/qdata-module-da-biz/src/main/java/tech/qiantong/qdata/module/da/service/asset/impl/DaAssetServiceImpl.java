@@ -475,7 +475,11 @@ public class DaAssetServiceImpl extends ServiceImpl<DaAssetMapper, DaAssetDO> im
      */
     @Override
     public PageResult<DaAssetDO> getDaAssetPage(DaAssetPageReqVO pageReqVO, String daAssetQueryType) {
-        PageResult<DaAssetDO> daAssetDOPageResult = daAssetMapper.selectPage(pageReqVO);
+        // Project-scoped requests must use the asset-project relation filter.
+        PageResult<DaAssetDO> daAssetDOPageResult =
+                pageReqVO.getProjectId() != null && StringUtils.isNotBlank(pageReqVO.getProjectCode())
+                        ? daAssetMapper.selectPageDpp(pageReqVO)
+                        : daAssetMapper.selectPage(pageReqVO);
         List<DaAssetDO> daAssetDOList = (List<DaAssetDO>) daAssetDOPageResult.getRows();
         for (DaAssetDO daAssetDO : daAssetDOList) {
             // Check if it's an API
@@ -514,6 +518,8 @@ public class DaAssetServiceImpl extends ServiceImpl<DaAssetMapper, DaAssetDO> im
                 .eq(StringUtils.isNotBlank(reqVO.getDescription()), DaAssetDO::getDescription, reqVO.getDescription())
                 .in(reqVO.getThemeAssetIdList() != null && !reqVO.getThemeAssetIdList()
                         .isEmpty(), DaAssetDO::getId, reqVO.getThemeAssetIdList())
+                .eq(reqVO.getProjectId() != null, "t3.PROJECT_ID", reqVO.getProjectId())
+                .eq(StringUtils.isNotBlank(reqVO.getProjectCode()), "t3.PROJECT_CODE", reqVO.getProjectCode())
                 .orderByStr(StringUtils.isNotBlank(reqVO.getOrderByColumn()), StringUtils.equals("asc", reqVO.getIsAsc()), StringUtils.isNotBlank(reqVO.getOrderByColumn()) ? Arrays.asList(reqVO.getOrderByColumn()
                                                                                                                                                                                             .split(",")) : null);
 
@@ -1258,7 +1264,12 @@ public class DaAssetServiceImpl extends ServiceImpl<DaAssetMapper, DaAssetDO> im
         //1: database table  2: external API 3: geospatial service 4: vector data 5: video data
         String type = daAsset.getType();
         if (StringUtils.equals("1", type)) {
-            createDaAssetColumnNew(daAsset);
+            reuseExistingTableAsset(daAsset);
+            if (daAsset.getId() != null) {
+                updateDaAsset(daAsset);
+            } else {
+                createDaAssetColumnNew(daAsset);
+            }
         } else if (StringUtils.equals("2", type)) {
             setDaAssetDefaultValues(daAsset);
             createDaAssetApiNew(daAsset);
@@ -1490,6 +1501,35 @@ public class DaAssetServiceImpl extends ServiceImpl<DaAssetMapper, DaAssetDO> im
             return;
         }
         daAssetThemeRelService.createDaAssetThemeRelList(themeIdList, daAsset.getId());
+    }
+
+    /**
+     * Reuse an existing database-table asset when registration starts from metadata.
+     * Metadata ID is the strongest key; datasource and table name are the legacy fallback.
+     */
+    private void reuseExistingTableAsset(DaAssetSaveReqVO daAsset) {
+        if (daAsset.getId() != null) {
+            return;
+        }
+
+        DaAssetDO existing = null;
+        if (daAsset.getTableId() != null) {
+            existing = daAssetMapper.selectOne(Wrappers.<DaAssetDO>lambdaQuery()
+                    .eq(DaAssetDO::getTableId, daAsset.getTableId())
+                    .eq(DaAssetDO::getDelFlag, "0")
+                    .last("LIMIT 1"));
+        }
+        if (existing == null && daAsset.getDatasourceId() != null
+                && StringUtils.isNotBlank(daAsset.getTableName())) {
+            existing = daAssetMapper.selectOne(Wrappers.<DaAssetDO>lambdaQuery()
+                    .eq(DaAssetDO::getDatasourceId, daAsset.getDatasourceId())
+                    .eq(DaAssetDO::getTableName, daAsset.getTableName())
+                    .eq(DaAssetDO::getDelFlag, "0")
+                    .last("LIMIT 1"));
+        }
+        if (existing != null) {
+            daAsset.setId(existing.getId());
+        }
     }
 
     /**
@@ -1827,23 +1867,23 @@ public class DaAssetServiceImpl extends ServiceImpl<DaAssetMapper, DaAssetDO> im
         List<TreeData> treeData = new ArrayList<>();
 
         treeData.add(TreeData.builder()
-                .name("By Business Category")
+                .name("按业务分类")
                 .type("0")
-                .otherData(JSON.parseObject("{\"tooltipStr\":\"Primarily for business and analytics personnel. Categorized by actual business lines or departmental functions, facilitating quick identification of data for specific business scenarios.\"}"))
+                .otherData(JSON.parseObject("{\"tooltipStr\":\"主要面向业务和分析人员，按实际业务线或部门职能分类，便于快速查找特定业务场景下的数据。\"}"))
                 .children(dmBusinessCategoryApiService.getTreeData("1"))
                 .build());
 
         treeData.add(TreeData.builder()
-                .name("By Theme Domain")
+                .name("按主题域")
                 .type("0")
-                .otherData(JSON.parseObject("{\"tooltipStr\":\"Primarily for architects and data developers. Divides global data by core business entities, suitable for cross-departmental data exploration and model design.\"}"))
+                .otherData(JSON.parseObject("{\"tooltipStr\":\"主要面向架构师和数据开发人员，按核心业务实体划分全域数据，适合跨部门数据探索和模型设计。\"}"))
                 .children(dmThemeDomainApiService.getTreeData("1"))
                 .build());
 
         treeData.add(TreeData.builder()
-                .name("By Data Warehouse Layer")
+                .name("按数仓分层")
                 .type("0")
-                .otherData(JSON.parseObject("{\"tooltipStr\":\"Primarily for underlying data developers. Divided by data processing depth and flow architecture, facilitating lineage tracing and technical troubleshooting.\"}"))
+                .otherData(JSON.parseObject("{\"tooltipStr\":\"主要面向底层数据开发人员，按数据加工深度和流转架构划分，便于血缘追踪和技术排查。\"}"))
                 .children(dmDataLayerApiService.getTreeData("1"))
                 .build());
         return treeData;
@@ -1856,13 +1896,6 @@ public class DaAssetServiceImpl extends ServiceImpl<DaAssetMapper, DaAssetDO> im
         }
 
         List<Long> ids = new ArrayList<>(daAssetList.size());
-        // Check if current metadata already exists
-        if (this.count(Wrappers.lambdaQuery(DaAssetDO.class)
-                .in(DaAssetDO::getTableId, daAssetList.stream()
-                        .map(e -> e.getTableId())
-                        .collect(Collectors.toList()))) > 0) {
-            throw new ServiceException("da.error.elem.exists", "Some of the selected metadata already exists in assets!");
-        }
         for (DaAssetSaveReqVO vo : daAssetList) {
             Long id = this.createDaAssetNew(vo);
             ids.add(id);

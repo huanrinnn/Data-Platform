@@ -203,7 +203,7 @@ const defaultRules = {
   name: [{ required: true, message: td('dm.businessCategory.nameRequired', 'Business category name cannot be empty'), trigger: "blur" }],
   engName: [
     { required: true, message: td('dm.businessCategory.engNameRequired', 'English abbreviation cannot be empty'), trigger: "blur" },
-    { pattern: /^[a-zA-Z]+$/, message: td('dm.dataDomain.englishOnly', 'Only English characters are allowed'), trigger: "blur" },
+    { pattern: /^[a-zA-Z0-9_]+$/, message: td('dm.businessCategory.engNamePattern', 'Only English letters, numbers and underscores are allowed'), trigger: "blur" },
   ],
   parentId: [{ required: true, message: td('dm.businessCategory.categoryEmpty', 'Parent category cannot be empty'), trigger: "blur" }],
   domainIds: [
@@ -241,7 +241,7 @@ const handleContactChange = (value) => {
 };
 
 const handleEngNameInput = (value) => {
-  form.value.engName = (value || "").replace(/[^a-zA-Z]/g, "");
+  form.value.engName = (value || "").replace(/[^a-zA-Z0-9_]/g, "");
 };
 
 /** Get a list of data fields */

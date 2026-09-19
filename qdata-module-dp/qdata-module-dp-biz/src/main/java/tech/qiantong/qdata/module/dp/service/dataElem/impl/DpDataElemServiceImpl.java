@@ -21,6 +21,7 @@ package tech.qiantong.qdata.module.dp.service.dataElem.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import cn.hutool.core.date.DateUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.github.yulichang.wrapper.MPJLambdaWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tech.qiantong.qdata.module.dp.api.service.dataElem.IDataElemApiService;
 import tech.qiantong.qdata.module.dp.controller.admin.dataElem.vo.DpDataElemPageReqVO;
+import tech.qiantong.qdata.module.dp.controller.admin.dataElem.vo.DpDataElemImportVO;
 import tech.qiantong.qdata.module.dp.controller.admin.dataElem.vo.DpDataElemRespVO;
 import tech.qiantong.qdata.module.dp.controller.admin.dataElem.vo.DpDataElemSaveReqVO;
 import tech.qiantong.qdata.module.dp.dal.dataobject.dataElem.DpDataElemDO;
@@ -169,7 +171,7 @@ public class DpDataElemServiceImpl extends ServiceImpl<DpDataElemMapper, DpDataE
      * @return Result
      */
     @Override
-    public String importDpDataElem(List<DpDataElemRespVO> importExcelList, boolean isUpdateSupport, String operName) {
+    public String importDpDataElem(List<DpDataElemImportVO> importExcelList, boolean isUpdateSupport, String operName) {
         if (StringUtils.isNull(importExcelList) || importExcelList.size() == 0) {
             throw new ServiceException("dp.error.import.empty", "Import data cannot be empty!");
         }
@@ -179,42 +181,35 @@ public class DpDataElemServiceImpl extends ServiceImpl<DpDataElemMapper, DpDataE
         List<String> successMessages = new ArrayList<>();
         List<String> failureMessages = new ArrayList<>();
 
-        for (DpDataElemRespVO respVO : importExcelList) {
+        for (DpDataElemImportVO respVO : importExcelList) {
             try {
                 DpDataElemDO dpDataElemDO = BeanUtils.toBean(respVO, DpDataElemDO.class);
                 Long dpDataElemId = respVO.getId();
-                if (isUpdateSupport) {
-                    if (dpDataElemId != null) {
-                        DpDataElemDO existingDpDataElem = dpDataElemMapper.selectById(dpDataElemId);
-                        if (existingDpDataElem != null) {
-                            dpDataElemMapper.updateById(dpDataElemDO);
-                            successNum++;
-                            successMessages.add(MessageUtils.messageWithFallback("dp.import.update.success",
-                                    "Data update successful, ID {0} {1} record.", dpDataElemId, MessageUtils.messageWithFallback("dp.entity.data.element", "Data element")));
-                        } else {
-                            failureNum++;
-                            failureMessages.add(MessageUtils.messageWithFallback("dp.import.update.fail",
-                                    "Data update failed, ID {0} {1} record does not exist.", dpDataElemId, MessageUtils.messageWithFallback("dp.entity.data.element", "Data element")));
-                        }
-                    } else {
-                        failureNum++;
-                        failureMessages.add(MessageUtils.messageWithFallback("dp.import.update.id.missing",
-                                "Data update failed, record ID does not exist."));
-                    }
-                } else {
-                    QueryWrapper<DpDataElemDO> queryWrapper = new QueryWrapper<>();
-                    queryWrapper.eq("id", dpDataElemId);
-                    DpDataElemDO existingDpDataElem = dpDataElemMapper.selectOne(queryWrapper);
+                if (dpDataElemId != null && isUpdateSupport) {
+                    DpDataElemDO existingDpDataElem = dpDataElemMapper.selectById(dpDataElemId);
                     if (existingDpDataElem == null) {
-                        dpDataElemMapper.insert(dpDataElemDO);
-                        successNum++;
-                        successMessages.add(MessageUtils.messageWithFallback("dp.import.insert.success",
-                                "Data insert successful, ID {0} {1} record.", dpDataElemId, MessageUtils.messageWithFallback("dp.entity.data.element", "Data element")));
-                    } else {
                         failureNum++;
-                        failureMessages.add(MessageUtils.messageWithFallback("dp.import.insert.fail",
-                                "Data insert failed, ID {0} {1} record already exists.", dpDataElemId, MessageUtils.messageWithFallback("dp.entity.data.element", "Data element")));
+                        failureMessages.add(MessageUtils.messageWithFallback("dp.import.update.fail",
+                                "Data update failed, ID {0} {1} record does not exist.", dpDataElemId,
+                                MessageUtils.messageWithFallback("dp.entity.data.element", "Data element")));
+                        continue;
                     }
+                    dpDataElemDO.setId(dpDataElemId);
+                    dpDataElemMapper.updateById(dpDataElemDO);
+                    successNum++;
+                    successMessages.add(MessageUtils.messageWithFallback("dp.import.update.success",
+                            "Data update successful, ID {0} {1} record.", dpDataElemId,
+                            MessageUtils.messageWithFallback("dp.entity.data.element", "Data element")));
+                } else {
+                    // A blank ID is the normal case for a new row in the import template.
+                    dpDataElemDO.setId(null);
+                    dpDataElemDO.setCreateBy(operName);
+                    dpDataElemDO.setCreateTime(DateUtil.date());
+                    dpDataElemMapper.insert(dpDataElemDO);
+                    successNum++;
+                    successMessages.add(MessageUtils.messageWithFallback("dp.import.insert.success",
+                            "Data insert successful, ID {0} {1} record.", dpDataElemDO.getId(),
+                            MessageUtils.messageWithFallback("dp.entity.data.element", "Data element")));
                 }
             } catch (Exception e) {
                 failureNum++;

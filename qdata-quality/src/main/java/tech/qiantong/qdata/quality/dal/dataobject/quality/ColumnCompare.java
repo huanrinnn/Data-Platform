@@ -20,22 +20,30 @@ package tech.qiantong.qdata.quality.dal.dataobject.quality;
 
 import lombok.Data;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Data
 public class ColumnCompare {
+
+    private static final Set<String> OPERATORS = new HashSet<>(Arrays.asList("=", "!=", "<>", "<", "<=", ">", ">="));
 
     private String leftField;
     private String operator;
     private String rightField;
 
     public String toExpression() {
-        return String.format("%s%s%s", leftField, operator, rightField);
+        validateOperator(operator);
+        return String.format("%s %s %s", leftField, normalizeOperator(operator), rightField);
     }
 
     public String toExpressionIgnoreNullValue() {
-        return String.format("(%s IS NULL OR %s IS NULL OR %s%s%s)", leftField, rightField, leftField, operator, rightField);
+        validateOperator(operator);
+        String sqlOperator = normalizeOperator(operator);
+        return String.format("(%s IS NULL OR %s IS NULL OR %s %s %s)", leftField, rightField, leftField, sqlOperator, rightField);
     }
 
     public static String toExpressions(List<ColumnCompare> compares, boolean ignoreNullValue) {
@@ -51,6 +59,16 @@ public class ColumnCompare {
         }
         return compares.stream().map(it -> String.format("(%s IS NULL OR %s IS NULL OR NOT %s)", it.getLeftField(), it.getRightField(), it.toExpression()))
                 .collect(Collectors.joining(" OR "));
+    }
+
+    private static void validateOperator(String operator) {
+        if (!OPERATORS.contains(operator)) {
+            throw new IllegalArgumentException("operator is not supported: " + operator);
+        }
+    }
+
+    private static String normalizeOperator(String operator) {
+        return "!=".equals(operator) ? "<>" : operator;
     }
 
 }

@@ -86,7 +86,7 @@
          destroy-on-close>
          <el-form ref="deptRef" :model="form" :rules="rules" label-width="80px" :label-position="labelPosition">
             <el-row :gutter="20">
-               <el-col :span="24" v-if="form.parentId !== 0">
+               <el-col :span="24">
                   <el-form-item :label="td('sys.system.dept.parentDept')" prop="parentId" :label-position="labelPosition">
                      <el-tree-select v-model="form.parentId" :data="deptOptions"
                         :props="{ value: 'deptId', label: 'deptName', children: 'children' }" value-key="deptId"
@@ -105,7 +105,21 @@
                </el-col>
                <el-col :span="12">
                   <el-form-item :label="td('sys.system.dept.leader')" prop="leader" :label-position="labelPosition">
-                     <el-input v-model="form.leader" :placeholder="td('sys.system.dept.leaderPlaceholder')" maxlength="20" />
+                     <el-select
+                        v-model="form.leaderUserId"
+                        filterable
+                        clearable
+                        :placeholder="td('sys.system.dept.leaderPlaceholder')"
+                        class="el-form-input-width"
+                        @change="handleLeaderChange"
+                     >
+                        <el-option
+                           v-for="item in leaderOptions"
+                           :key="item.userId"
+                           :label="item.nickName + ' (' + item.userName + ')'"
+                           :value="item.userId"
+                        />
+                     </el-select>
                   </el-form-item>
                </el-col>
                <el-col :span="12">
@@ -141,6 +155,7 @@
 <script setup name="Dept">
 import useDefaultLang from "@/composables/useDefaultLang";
 import { listDept, getDept, delDept, addDept, updateDept, listDeptExcludeChild } from "@/api/system/system/dept.js";
+import { listUser } from "@/api/system/system/user.js";
 
 const { td } = useDefaultLang();
 const { proxy } = getCurrentInstance();
@@ -153,6 +168,7 @@ const loading = ref(true);
 const showSearch = ref(true);
 const title = ref("");
 const deptOptions = ref([]);
+const leaderOptions = ref([]);
 const isExpandAll = ref(true);
 const refreshTable = ref(true);
 const data = reactive({
@@ -169,6 +185,12 @@ const data = reactive({
       phone: [{ pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/, message: td('sys.system.dept.phoneRequired'), trigger: "blur" }]
    },
 });
+
+const rootDeptOption = {
+   deptId: 0,
+   deptName: "顶级部门",
+   children: []
+};
 
 const { queryParams, form, rules } = toRefs(data);
 
@@ -192,9 +214,10 @@ function cancel() {
 function reset() {
    form.value = {
       deptId: undefined,
-      parentId: undefined,
+      parentId: 0,
       deptName: undefined,
       orderNum: 0,
+      leaderUserId: undefined,
       leader: undefined,
       phone: undefined,
       email: undefined,
@@ -218,10 +241,13 @@ function resetQuery() {
 function handleAdd(row) {
    reset();
    listDept().then(response => {
-      deptOptions.value = proxy.handleTree(response.data, "deptId");
+      deptOptions.value = [rootDeptOption, ...proxy.handleTree(response.data, "deptId")];
    });
+   loadLeaderOptions();
    if (row != undefined) {
       form.value.parentId = row.deptId;
+   } else {
+      form.value.parentId = 0;
    }
    open.value = true;
    title.value = td('sys.system.dept.addTitle');
@@ -240,13 +266,41 @@ function toggleExpandAll() {
 function handleUpdate(row) {
    reset();
    listDeptExcludeChild(row.deptId).then(response => {
-      deptOptions.value = proxy.handleTree(response.data, "deptId");
+      deptOptions.value = [rootDeptOption, ...proxy.handleTree(response.data, "deptId")];
    });
+   loadLeaderOptions();
    getDept(row.deptId).then(response => {
       form.value = response.data;
+      syncLeaderUserId();
       open.value = true;
       title.value = td('sys.system.dept.editTitle');
    });
+}
+
+function loadLeaderOptions() {
+   listUser({ pageNum: 1, pageSize: 1000 }).then(response => {
+      leaderOptions.value = response.rows || response.data || [];
+      syncLeaderUserId();
+   });
+}
+
+function syncLeaderUserId() {
+   if (!form.value.leader || !leaderOptions.value.length) {
+      return;
+   }
+   const matchedUser = leaderOptions.value.find(item => item.nickName === form.value.leader || item.userName === form.value.leader);
+   form.value.leaderUserId = matchedUser ? matchedUser.userId : undefined;
+}
+
+function handleLeaderChange(userId) {
+   const selectedUser = leaderOptions.value.find(item => item.userId === userId);
+   if (selectedUser) {
+      form.value.leader = selectedUser.nickName || selectedUser.userName;
+      form.value.phone = selectedUser.phonenumber;
+   } else {
+      form.value.leader = undefined;
+      form.value.phone = undefined;
+   }
 }
 
 /** submit button */

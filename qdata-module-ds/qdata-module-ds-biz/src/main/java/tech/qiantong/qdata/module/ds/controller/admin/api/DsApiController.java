@@ -227,6 +227,7 @@ public class DsApiController extends BaseController {
 //                e.printStackTrace();
 //            }
 //        }
+        normalizeNullableFields(dataApi);
         dataApi.setCreateBy(getUsername());
         dataApi.setCreatorId(getUserId());
         dataApi.setCreateTime(DateUtil.date());
@@ -250,10 +251,20 @@ public class DsApiController extends BaseController {
 //                e.printStackTrace();
 //            }
 //        }
+        normalizeNullableFields(dataApi);
         dataApi.setUpdatorId(getUserId());
         dataApi.setUpdateBy(getUsername());
         dataApi.setUpdateTime(DateUtil.date());
         return dsApiService.updateDataApi(dataApi);
+    }
+
+    private void normalizeNullableFields(DsApiDO dataApi) {
+        if (StringUtils.isBlank(dataApi.getApiId())) {
+            dataApi.setApiId(null);
+        }
+        if (StringUtils.isBlank(dataApi.getTransmitType())) {
+            dataApi.setTransmitType(null);
+        }
     }
 
 

@@ -518,15 +518,15 @@ public class DpModelServiceImpl extends ServiceImpl<DpModelMapper, DpModelDO> im
         List<TreeData> treeData = new ArrayList<>();
 
         treeData.add(TreeData.builder()
-                .name("Public Layer")
+                .name("公共层")
                 .type("0")
-                .otherData(JSON.parseObject("{\"tooltipStr\":\"Mainly for data developers, as the data foundation of the application layer, build messy data into common detailed models for easy reuse.\"}"))
+                .otherData(JSON.parseObject("{\"tooltipStr\":\"主要面向数据研发人员，作为应用层的数据基础，将杂乱数据加工为便于复用的公共明细模型。\"}"))
                 .children(dmBusinessCategoryApiService.getTreeData(null))
                 .build());
         treeData.add(TreeData.builder()
-                .name("Application Layer")
+                .name("应用层")
                 .type("0")
-                .otherData(JSON.parseObject("{\"tooltipStr\":\"Mainly for business and analysis personnel, computed by processing base data from the public layer, directly used for visualization dashboards or business reports.\"}"))
+                .otherData(JSON.parseObject("{\"tooltipStr\":\"主要面向业务和分析人员，通过加工公共层基础数据生成，可直接用于可视化看板或业务报表。\"}"))
                 .children(dmThemeDomainApiService.getTreeData(null))
                 .build());
         return treeData;

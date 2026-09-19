@@ -157,39 +157,36 @@
                 <span v-else>-</span>
               </template>
               <template #themeDomainId="{ row, $index }">
-                <template v-if="!row.tableType || row.tableType == '4'">
-                  <el-form-item
-                    :prop="'rows.' + $index + '.themeDomainId'"
-                    :rules="[
-                      {
-                        required: true,
-                        message: td('dpp.asset.add.themeDomainRequired'),
-                        trigger: 'change',
-                      },
-                    ]"
-                    label-width="0"
-                    style="margin-bottom: 0"
-                  >
-                    <el-tree-select
-                      v-model="row.themeDomainId"
-                      :data="options.themeDomainList"
-                      :props="{
-                        value: 'id',
-                        label: 'displayName',
-                        children: 'children',
-                      }"
-                      node-key="id"
-                      value-key="id"
-                      :placeholder="td('dpp.asset.add.themeDomainPlaceholder')"
-                      check-strictly
-                      filterable
-                      clearable
-                      default-expand-all
-                      @change="(val) => handleThemeDomainChange(val, row)"
-                    />
-                  </el-form-item>
-                </template>
-                <span v-else>-</span>
+                <el-form-item
+                  :prop="'rows.' + $index + '.themeDomainId'"
+                  :rules="[
+                    {
+                      required: true,
+                      message: td('dpp.asset.add.themeDomainRequired'),
+                      trigger: 'change',
+                    },
+                  ]"
+                  label-width="0"
+                  style="margin-bottom: 0"
+                >
+                  <el-tree-select
+                    v-model="row.themeDomainId"
+                    :data="options.themeDomainList"
+                    :props="{
+                      value: 'id',
+                      label: 'displayName',
+                      children: 'children',
+                    }"
+                    node-key="id"
+                    value-key="id"
+                    :placeholder="td('dpp.asset.add.themeDomainPlaceholder')"
+                    check-strictly
+                    filterable
+                    clearable
+                    default-expand-all
+                    @change="(val) => handleThemeDomainChange(val, row)"
+                  />
+                </el-form-item>
               </template>
               <template #dataDomainId="{ row, $index }">
                 <template v-if="!row.tableType || row.tableType != '4'">
@@ -396,13 +393,9 @@
           />
         </el-form-item>
         <el-form-item
-          v-if="
-            !batchForm.tableType ||
-            batchForm.tableType == -1 ||
-            batchForm.tableType == '4'
-          "
           :label="td('dpp.asset.add.themeDomain')"
-         :label-position="labelPosition">
+          :label-position="labelPosition"
+        >
           <el-tree-select
             v-model="batchForm.themeDomainId"
             :data="[
@@ -897,15 +890,9 @@ const confirmBatchSetting = async () => {
       }
     };
 
-    // 2. Business attribute update: determine the assignment range based on the current tableType of the row
-    if (!row.tableType) {
-      applyBusinessAttr();
-      applyThemeAttr();
-    } else if (row.tableType === "4") {
-      // Application table: only assign values to the subject to which they belong
-      applyThemeAttr();
-    } else {
-      // Non-application table: only assign business classification/data domain
+    // 2. Theme domain is an asset-map dimension for every registered table.
+    applyThemeAttr();
+    if (!row.tableType || row.tableType !== "4") {
       applyBusinessAttr();
     }
   }

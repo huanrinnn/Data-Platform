@@ -62,6 +62,12 @@
                   <i class="iconfont-mini icon-xinzeng mr5"></i>{{ td('dp.common.add') }}
                 </el-button>
               </el-col>
+              <el-col :span="1.5">
+                <el-button plain @click="handleImport" v-hasPermi="['dp:dataElem:import']"
+                  @mousedown="(e) => e.preventDefault()">
+                  <i class="iconfont-mini icon-daoru mr5"></i>{{ td('common.button.import', '导入') }}
+                </el-button>
+              </el-col>
             </el-row>
             <div class="justify-end top-right-btn">
               <right-toolbar v-model:showSearch="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
@@ -713,8 +719,8 @@ function handleImport() {
 
 /** Download template operation */
 function importTemplate() {
-  proxy.download(
-    "system/user/importTemplate",
+  proxy.download2(
+    "dp/dataElem/importTemplate",
     {},
     `dpDataElem_template_${new Date().getTime()}.xlsx`
   );

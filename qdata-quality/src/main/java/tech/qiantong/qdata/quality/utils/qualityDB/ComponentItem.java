@@ -384,6 +384,76 @@ public interface ComponentItem extends QualityFragSql {
         return addPagination(sql, limit, offset);
     }
 
+    default String generateConditionalFieldValidationSql(QualityRuleEntity rule) {
+        return generateSql(rule, conditionalFieldErrorFrag(rule));
+    }
+
+    default String generateConditionalFieldValidationErrorSql(QualityRuleEntity rule) {
+        return generateDataSql(rule, conditionalFieldErrorFrag(rule));
+    }
+
+    default String generateConditionalFieldValidationValidDataSql(QualityRuleEntity rule, int limit, int offset) {
+        return addPagination(generateDataSql(rule, String.format("NOT (%s)", conditionalFieldErrorFrag(rule))), limit, offset);
+    }
+
+    default String conditionalFieldErrorFrag(QualityRuleEntity rule) {
+        Map<String, Object> config = rule.getConfig();
+        Map<String, Object> when = (Map<String, Object>) config.get("when");
+        Map<String, Object> then = (Map<String, Object>) config.get("then");
+        cn.hutool.core.lang.Assert.notNull(when, "Conditional rule must configure when");
+        cn.hutool.core.lang.Assert.notNull(then, "Conditional rule must configure then");
+
+        String whenExpr = conditionalWhenExpression(when);
+        String thenExpr = conditionalThenExpression(then);
+        return String.format("(%s) AND NOT (%s)", whenExpr, thenExpr);
+    }
+
+    default String conditionalWhenExpression(Map<String, Object> when) {
+        String field = String.valueOf(when.get("field"));
+        String operator = String.valueOf(when.get("operator"));
+        Object value = when.get("value");
+        Object values = when.get("values");
+        cn.hutool.core.lang.Assert.notBlank(field, "Conditional rule when.field is required");
+        cn.hutool.core.lang.Assert.notBlank(operator, "Conditional rule when.operator is required");
+
+        switch (operator) {
+            case "=":
+            case "!=":
+            case "<>":
+                return String.format("%s %s '%s'", field, "!=".equals(operator) ? "<>" : operator, escapeSqlValue(value));
+            case "IN":
+            case "NOT_IN":
+                List<?> list = values instanceof List ? (List<?>) values : java.util.Collections.emptyList();
+                cn.hutool.core.lang.Assert.isFalse(list.isEmpty(), "Conditional rule when.values is required");
+                String valueList = list.stream()
+                        .map(it -> String.format("'%s'", escapeSqlValue(it)))
+                        .collect(Collectors.joining(", "));
+                return String.format("%s %s (%s)", field, "NOT_IN".equals(operator) ? "NOT IN" : "IN", valueList);
+            default:
+                throw new IllegalArgumentException("Conditional rule when.operator is not supported: " + operator);
+        }
+    }
+
+    default String conditionalThenExpression(Map<String, Object> then) {
+        String field = String.valueOf(then.get("field"));
+        String operator = String.valueOf(then.get("operator"));
+        cn.hutool.core.lang.Assert.notBlank(field, "Conditional rule then.field is required");
+        cn.hutool.core.lang.Assert.notBlank(operator, "Conditional rule then.operator is required");
+
+        switch (operator) {
+            case "IS_NOT_NULL":
+                return String.format("%s IS NOT NULL", field);
+            case "IS_NULL":
+                return String.format("%s IS NULL", field);
+            default:
+                throw new IllegalArgumentException("Conditional rule then.operator is not supported: " + operator);
+        }
+    }
+
+    default String escapeSqlValue(Object value) {
+        return String.valueOf(value == null ? "" : value).replace("'", "''");
+    }
+
     /**
      * Field group integrity check - error statistics SQL
      * Rule code: GROUP_FIELD_COMPLETENESS

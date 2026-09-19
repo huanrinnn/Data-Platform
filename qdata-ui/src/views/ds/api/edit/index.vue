@@ -253,6 +253,10 @@ const {
     loadingOptions
 } = toRefs(data);
 
+function emptyToNull(value) {
+    return value === '' || value === undefined ? null : value;
+}
+
 watch(
     () => form1.value.id,
     (newVal) => { }
@@ -333,8 +337,8 @@ function submitForm() {
                     apiServiceType: form2.value.apiServiceType,
                     sortBy: form2.value.sortBy,
                     headerJson: form2.value.headerJson,
-                    apiId: form2.value.apiId,
-                    transmitType: form2.value.transmitType,
+                    apiId: emptyToNull(form2.value.apiId),
+                    transmitType: emptyToNull(form2.value.transmitType),
                 };
             });
             let params = {};
@@ -354,6 +358,8 @@ function submitForm() {
             params.reqParams = JSON.stringify(params.executeConfig.reqParams);
             params.headerJson = JSON.stringify(params.executeConfig.headerJson);
             params.configJson = JSON.stringify(params.executeConfig);
+            params.apiId = emptyToNull(params.apiId);
+            params.transmitType = emptyToNull(params.transmitType);
             if (form1.value.id) {
                 //Delete creation and update time fields
                 delete params.createTime;

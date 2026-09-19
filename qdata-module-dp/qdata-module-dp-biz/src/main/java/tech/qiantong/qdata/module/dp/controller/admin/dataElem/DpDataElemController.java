@@ -41,6 +41,7 @@ import tech.qiantong.qdata.common.utils.object.BeanUtils;
 import tech.qiantong.qdata.common.utils.poi.ExcelUtil;
 import tech.qiantong.qdata.common.exception.enums.GlobalErrorCodeConstants;
 import tech.qiantong.qdata.module.dp.controller.admin.dataElem.vo.DpDataElemPageReqVO;
+import tech.qiantong.qdata.module.dp.controller.admin.dataElem.vo.DpDataElemImportVO;
 import tech.qiantong.qdata.module.dp.controller.admin.dataElem.vo.DpDataElemRespVO;
 import tech.qiantong.qdata.module.dp.controller.admin.dataElem.vo.DpDataElemSaveReqVO;
 import tech.qiantong.qdata.module.dp.convert.dataElem.DpDataElemConvert;
@@ -93,11 +94,19 @@ public class DpDataElemController extends BaseController {
     @Log(title = "log.op.title.dp.data.elem", businessType = BusinessType.IMPORT)
     @PostMapping("/importData")
     public AjaxResult importData(MultipartFile file, boolean updateSupport) throws Exception {
-        ExcelUtil<DpDataElemRespVO> util = new ExcelUtil<>(DpDataElemRespVO.class);
-        List<DpDataElemRespVO> importExcelList = util.importExcel(file.getInputStream());
+        ExcelUtil<DpDataElemImportVO> util = new ExcelUtil<>(DpDataElemImportVO.class);
+        List<DpDataElemImportVO> importExcelList = util.importExcel(file.getInputStream());
         String operName = getUsername();
         String message = dpDataElemService.importDpDataElem(importExcelList, updateSupport, operName);
         return success(message);
+    }
+
+    @Operation(summary = "下载数据元导入模板")
+    @PreAuthorize("@ss.hasPermi('dp:dataElem:import')")
+    @RequestMapping(value = "/importTemplate", method = {RequestMethod.GET, RequestMethod.POST})
+    public void importTemplate(HttpServletResponse response) {
+        ExcelUtil<DpDataElemImportVO> util = new ExcelUtil<>(DpDataElemImportVO.class);
+        util.importTemplateExcel(response, "数据元导入模板");
     }
 
     @Operation(summary = "获取数据元详细信息")

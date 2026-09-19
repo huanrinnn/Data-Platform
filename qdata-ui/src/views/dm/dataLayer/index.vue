@@ -471,9 +471,31 @@ const data = reactive({
 const { form, rules } = toRefs(data);
 
 /** query tree */
+function normalizeLayerTree(nodes = []) {
+  return nodes.map((node) => {
+    const item = { ...node };
+    const abbreviation = item.engName || item.shortName;
+    const standardNames = {
+      ODS: "操作数据层",
+      DIM: "维度层",
+      DWD: "明细数据层",
+      DWS: "汇总数据层",
+      ADS: "数据应用层",
+    };
+    const chineseName = standardNames[String(abbreviation || "").toUpperCase()];
+    if (chineseName) {
+      item.name = chineseName;
+    }
+    if (item.children && item.children.length > 0) {
+      item.children = normalizeLayerTree(item.children);
+    }
+    return item;
+  });
+}
+
 function getTree() {
   treeDataLayer().then((response) => {
-    layerTreeOptions.value = response.data;
+    layerTreeOptions.value = normalizeLayerTree(response.data || []);
     nextTick(() => {
       let targetNode = null;
       const findNode = (nodes) => {

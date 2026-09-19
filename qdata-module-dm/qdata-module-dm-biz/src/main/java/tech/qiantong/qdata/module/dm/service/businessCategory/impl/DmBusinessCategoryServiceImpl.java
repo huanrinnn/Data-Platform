@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -110,23 +111,26 @@ public class DmBusinessCategoryServiceImpl extends ServiceImpl<DmBusinessCategor
         if (catDO == null) {
             return 0;
         }
+        Long oldParentId = catDO.getParentId() == null ? 0L : catDO.getParentId();
+        Long newParentId = updateReqVO.getParentId() == null ? oldParentId : updateReqVO.getParentId();
+        updateReqVO.setParentId(newParentId);
         // Check if the parent is set to itself
-        if (catDO.getId().equals(updateReqVO.getParentId())) {
+        if (catDO.getId().equals(newParentId)) {
             throw new tech.qiantong.qdata.common.exception.ServiceException("Cannot select itself as the parent category");
         }
 
         if (Boolean.FALSE.equals(updateReqVO.getValidFlag())) {
             baseMapper.updateValidFlag(catDO.getCode(), updateReqVO.getValidFlag());
         } else if (Boolean.TRUE.equals(updateReqVO.getValidFlag())) {
-            DmBusinessCategoryDO parent = baseMapper.selectById(catDO.getParentId());
+            DmBusinessCategoryDO parent = oldParentId == 0L ? null : baseMapper.selectById(oldParentId);
             if (parent != null && Boolean.FALSE.equals(parent.getValidFlag())) {
                 throw new tech.qiantong.qdata.common.exception.ServiceException("Parent must be enabled first");
             }
         }
         // Check if the parent relationship has changed
         boolean flag = false;
-        if (!catDO.getParentId().equals(updateReqVO.getParentId())) {
-            updateReqVO.setCode(createCode(updateReqVO.getParentId(), null));
+        if (!Objects.equals(oldParentId, newParentId)) {
+            updateReqVO.setCode(createCode(newParentId, null));
             flag = true;
         }
 

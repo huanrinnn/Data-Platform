@@ -268,6 +268,11 @@ const descList = ref([
     value: "",
   },
   {
+    key: "themeDomainName",
+    label: td('da.assetDetail.detail.themeDomain', '所属主题域'),
+    value: "",
+  },
+  {
     key: "tag",
     label: td('da.assetDetail.detail.dataTag'),
     value: "",

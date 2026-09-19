@@ -422,7 +422,11 @@ import {
 import columnAdd from "./columnAdd";
 import { defineProps, defineEmits, ref, computed, watch } from "vue";
 import { getDpModelColumnList } from "@/api/dp/model/model";
-import { findInTree, formatModelName } from "../../../../utils/dm/utils";
+import {
+  findInTree,
+  formatModelName,
+  formatNameWithAbbr,
+} from "../../../../utils/dm/utils";
 
 const { td } = useDefaultLang();
 const {
@@ -507,9 +511,7 @@ const formatTreeData = (list) => {
     const newItem = { ...item };
     newItem.id = Number(item.id); // Force conversion to a number to match the echo
     const abbreviation = item.engName || item.shortName;
-    newItem.displayName = abbreviation
-      ? `${item.name} / ${abbreviation}`
-      : item.name;
+    newItem.displayName = formatNameWithAbbr(item.name, abbreviation);
     if (item.children && item.children.length) {
       newItem.children = formatTreeData(item.children);
     }
@@ -529,9 +531,7 @@ const fetchAllOptions = (currentType) => {
           const newItem = { ...item };
           newItem.id = Number(item.id); // Force conversion to a number to match the echo
           const abbreviation = item.engName || item.shortName;
-          newItem.displayName = abbreviation
-            ? `${item.name} / ${abbreviation}`
-            : item.name;
+          newItem.displayName = formatNameWithAbbr(item.name, abbreviation);
           if (!item.parentId || item.parentId === 0 || item.parentId === "0") {
             newItem.disabled = true;
           }

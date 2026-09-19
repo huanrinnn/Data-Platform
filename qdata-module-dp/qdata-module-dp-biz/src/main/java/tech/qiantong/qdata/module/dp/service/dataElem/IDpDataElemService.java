@@ -21,6 +21,7 @@ package tech.qiantong.qdata.module.dp.service.dataElem;
 import com.baomidou.mybatisplus.extension.service.IService;
 import tech.qiantong.qdata.common.core.page.PageResult;
 import tech.qiantong.qdata.module.dp.controller.admin.dataElem.vo.DpDataElemPageReqVO;
+import tech.qiantong.qdata.module.dp.controller.admin.dataElem.vo.DpDataElemImportVO;
 import tech.qiantong.qdata.module.dp.controller.admin.dataElem.vo.DpDataElemRespVO;
 import tech.qiantong.qdata.module.dp.controller.admin.dataElem.vo.DpDataElemSaveReqVO;
 import tech.qiantong.qdata.module.dp.dal.dataobject.dataElem.DpDataElemDO;
@@ -100,7 +101,7 @@ public interface IDpDataElemService extends IService<DpDataElemDO> {
      * @param operName        Operator
      * @return Result
      */
-    String importDpDataElem(List<DpDataElemRespVO> importExcelList, boolean isUpdateSupport, String operName);
+    String importDpDataElem(List<DpDataElemImportVO> importExcelList, boolean isUpdateSupport, String operName);
 
     /**
      * Update data element status

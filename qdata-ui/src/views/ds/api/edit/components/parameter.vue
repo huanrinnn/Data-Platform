@@ -729,8 +729,8 @@ function configTypeSelectChanged() {
     props.form2.resParams = [];
     props.form2.headerJson = [];
     props.form2.table = {};
-    props.form2.transmitType = ''
-    props.form2.apiId = ''
+    props.form2.transmitType = null
+    props.form2.apiId = null
     props.form2.categoryAssetList = ''
   }
 }

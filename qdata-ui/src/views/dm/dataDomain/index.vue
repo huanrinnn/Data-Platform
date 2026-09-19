@@ -433,7 +433,7 @@ const data = reactive({
     name: [{ required: true, message: td('dm.dataDomain.nameRequired', 'Data domain name cannot be empty'), trigger: "blur" }],
     engName: [
       { required: true, message: td('dm.dataDomain.engNameRequired', 'English abbreviation cannot be empty'), trigger: "blur" },
-      { pattern: /^[a-zA-Z]+$/, message: td('dm.dataDomain.englishOnly', 'Only English characters are allowed'), trigger: "blur" },
+      { pattern: /^[a-zA-Z0-9_]+$/, message: td('dm.dataDomain.engNamePattern', 'Only English letters, numbers and underscores are allowed'), trigger: "blur" },
     ],
     ownerUserId: [
       { required: true, message: td('dm.dataDomain.ownerRequired', 'Responsible person cannot be empty'), trigger: "blur" },

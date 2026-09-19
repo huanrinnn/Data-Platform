@@ -20,6 +20,8 @@ export const ruleRegistry = {
   DATE_FORMAT_VALIDATION: { label: '日期时间格式校验', componentPath: "./dateFormatRule.vue" },
   GROUP_FIELD_COMPLETENESS: { label: '字段组完整性校验', componentPath: "./combinerFieldUniqueRule.vue" },
   TIME_ORDER_VALIDATION: { label: '时间字段先后顺序校验', componentPath: "./timeOrderRule.vue" },
+  FIELD_COMPARE_VALIDATION: { label: '字段比较校验', componentPath: "./fieldCompareRule.vue" },
+  CONDITIONAL_FIELD_VALIDATION: { label: '条件字段校验', componentPath: "./conditionalFieldRule.vue" },
 }
 
 // Obtain rule meta-information: used to display basic descriptions such as label

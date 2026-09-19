@@ -142,37 +142,35 @@
     </el-form-item>
   </template>
 
-  <template v-else>
-    <el-form-item
-        :label="td('dpp.asset.add.table.themeDomain')"
-        prop="themeDomainId"
-        :rules="[
-        {
-          required: true,
-          message: td('dpp.asset.add.table.themeDomainRequired'),
-          trigger: 'change',
-        },
-      ]"
-    >
-      <el-tree-select
-          v-model="localForm.themeDomainId"
-          :data="themeDomainList"
-          :loading="themeLoading"
-          :props="{
-          value: 'id',
-          label: 'displayName',
-          children: 'children',
-        }"
-          node-key="id"
-          value-key="id"
-          :placeholder="td('dpp.asset.add.table.themeDomainPlaceholder')"
-          check-strictly
-          filterable
-          clearable
-          style="width: 100%"
-      />
-    </el-form-item>
-  </template>
+  <el-form-item
+      :label="td('dpp.asset.add.table.themeDomain')"
+      prop="themeDomainId"
+      :rules="[
+      {
+        required: true,
+        message: td('dpp.asset.add.table.themeDomainRequired'),
+        trigger: 'change',
+      },
+    ]"
+  >
+    <el-tree-select
+        v-model="localForm.themeDomainId"
+        :data="themeDomainList"
+        :loading="themeLoading"
+        :props="{
+        value: 'id',
+        label: 'displayName',
+        children: 'children',
+      }"
+        node-key="id"
+        value-key="id"
+        :placeholder="td('dpp.asset.add.table.themeDomainPlaceholder')"
+        check-strictly
+        filterable
+        clearable
+        style="width: 100%"
+    />
+  </el-form-item>
 
   <el-form-item
       :label="td('dpp.asset.add.table.tableNamingRule')"
@@ -384,23 +382,22 @@ const fetchAllOptions = (currentType) => {
         layerLoading.value = false;
       });
 
-  let p2;
-  if (targetType == "4") {
-    // subject area
-    themeLoading.value = true;
-    p2 = listThemeDomain({ pageNum: 1, pageSize: 1000, validFlag: true })
-        .then((res) => {
-          const tree = proxy.handleTree(
-              res.data?.rows || res.data || res.rows || [],
-              "id",
-              "parentId"
-          );
-          themeDomainList.value = formatTreeData(tree);
-        })
-        .finally(() => {
-          themeLoading.value = false;
-        });
-  } else {
+  themeLoading.value = true;
+  const pTheme = listThemeDomain({ pageNum: 1, pageSize: 1000, validFlag: true })
+      .then((res) => {
+        const tree = proxy.handleTree(
+            res.data?.rows || res.data || res.rows || [],
+            "id",
+            "parentId"
+        );
+        themeDomainList.value = formatTreeData(tree);
+      })
+      .finally(() => {
+        themeLoading.value = false;
+      });
+
+  let p2 = Promise.resolve();
+  if (targetType != "4") {
     // Business classification
     businessLoading.value = true;
     p2 = listBusinessCategory({
@@ -422,7 +419,7 @@ const fetchAllOptions = (currentType) => {
           businessLoading.value = false;
         });
   }
-  return Promise.all([p1, p2]);
+  return Promise.all([p1, p2, pTheme]);
 };
 
 const fetchDataDomain = (businessDomainId) => {
@@ -479,14 +476,14 @@ const generateModelName = (initialData = null) => {
 
   localForm.value.namingSpec = formatModelName(options);
 
-  // Sync business/topic codes
-  if (localForm.value.tableType === "4") {
-    const theme = findInTree(
-        themeDomainList.value,
-        localForm.value.themeDomainId
-    );
-    if (theme) localForm.value.themeDomainCode = theme.code;
-  } else {
+  // Keep the asset-map theme-domain key in sync with the selected theme domain.
+  const theme = findInTree(
+      themeDomainList.value,
+      localForm.value.themeDomainId
+  );
+  localForm.value.themeDomainCode = theme ? theme.code : "";
+
+  if (localForm.value.tableType !== "4") {
     const biz = findInTree(
         businessCategoryList.value,
         localForm.value.businessDomainId
