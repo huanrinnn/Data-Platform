@@ -20,6 +20,33 @@ import { defineConfig, loadEnv } from "vite";
 import path from "path";
 import createVitePlugins from "./vite/plugins";
 
+const chunkGroups = [
+  { name: "vue", deps: ["vue", "vue-router", "pinia", "@vueuse/core"] },
+  { name: "element-plus", deps: ["element-plus", "@element-plus/icons-vue"] },
+  { name: "antv", deps: ["@antv/x6", "@antv/x6-plugin-dnd", "@antv/x6-plugin-export", "@antv/x6-plugin-history", "@antv/x6-plugin-keyboard", "@antv/x6-plugin-selection", "@antv/x6-vue-shape", "@antv/layout"] },
+  { name: "editor", deps: ["monaco-editor", "ace-builds", "codemirror", "@codemirror"] },
+  { name: "charts", deps: ["echarts", "zrender", "vis-network"] },
+  { name: "office", deps: ["xlsx", "jszip", "@vue-office"] },
+  { name: "crypto", deps: ["crypto-js", "jsencrypt"] },
+];
+
+function getNodeModuleName(id) {
+  const normalized = id.split(path.sep).join("/");
+  const [, modulePath] = normalized.split("/node_modules/");
+  if (!modulePath) return "";
+  const parts = modulePath.split("/");
+  return parts[0]?.startsWith("@") ? `${parts[0]}/${parts[1]}` : parts[0];
+}
+
+function manualChunks(id) {
+  if (!id.includes("node_modules")) return undefined;
+  const moduleName = getNodeModuleName(id);
+  const group = chunkGroups.find(({ deps }) =>
+    deps.some((dep) => moduleName === dep || moduleName.startsWith(`${dep}/`))
+  );
+  return group?.name || "vendor";
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd());
@@ -37,17 +64,20 @@ export default defineConfig(({ mode, command }) => {
           // nested: path.resolve(__dirname, "login/index.html"),
         },
         output: {
-          manualChunks(id) {
-            if (id.includes("node_modules")) {
-              return id
-                .toString()
-                .split("node_modules/")[1]
-                .split("/")[0]
-                .toString();
-            }
-          },
+          manualChunks,
         },
       },
+    },
+    optimizeDeps: {
+      include: [
+        "vue",
+        "vue-router",
+        "pinia",
+        "axios",
+        "element-plus",
+        "@element-plus/icons-vue",
+        "@vueuse/core",
+      ],
     },
     resolve: {
       // https://cn.vitejs.dev/config/#resolve-alias

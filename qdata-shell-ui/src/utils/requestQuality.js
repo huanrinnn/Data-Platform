@@ -44,11 +44,17 @@ service.interceptors.response.use(
     return Promise.reject(payload)
   },
   (error) => {
-    const message = error.message === 'Network Error'
-      ? '质量服务暂不可用'
-      : error.message
+    const payload = error.response?.data || {}
+    const message = payload.msg || payload.message || (
+      error.message === 'Network Error'
+        ? '质量服务暂不可用'
+        : error.message
+    )
     ElMessage({ message, type: 'error' })
-    return Promise.reject(error)
+    const requestError = new Error(message)
+    requestError.code = payload.code || error.response?.status
+    requestError.response = error.response
+    return Promise.reject(requestError)
   }
 )
 

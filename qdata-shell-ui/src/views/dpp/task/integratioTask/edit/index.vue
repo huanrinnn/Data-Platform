@@ -291,7 +291,6 @@ const { td } = useDefaultLang();
 const { proxy } = getCurrentInstance();
 const route = useRoute();
 const router = useRouter();
-let id = route.query.id || 1;
 // "edit": edit, "input": only look at input fields, "output": only look at output fields
 // tooltip display content
 const taskType = ref("");
@@ -302,13 +301,17 @@ const getTaskType = (json) => {
   if (!json) {
     return "SPARK";
   }
-  let type = json && JSON.parse(json).taskType;
-  return type;
+  try {
+    return JSON.parse(json).taskType || "SPARK";
+  } catch (error) {
+    console.warn("Invalid integration task draft JSON", error);
+    return "SPARK";
+  }
 };
 
 // icon
 const getDatasourceIcon = (json) => {
-  let type = json && JSON.parse(json).taskType;
+  let type = getTaskType(json);
   taskType.value = type;
   switch (type) {
     case "FLINK":
@@ -324,16 +327,6 @@ const getDatasourceIcon = (json) => {
       return null;
   }
 };
-// Monitor id changes
-watch(
-  () => route.query.id,
-  (newId) => {
-    id = newId || 1;
-    if (id) {
-      getList();
-    }
-  }
-);
 // Jump judgment
 let hasUnsavedChanges = ref(false);
 let nodeData = ref({ taskConfig: {}, name: null });
@@ -421,20 +414,52 @@ const undoDisabled = ref(null);
 // Exported data
 const exportData2 = ref("");
 let loading = ref(false);
-function getList() {
+let graphReady = false;
+let loadRequestId = 0;
+
+async function getList(taskId = route.query.id, responsePromise = null) {
+  if (!taskId || !graph || !graphReady) {
+    return;
+  }
+
+  const requestId = ++loadRequestId;
   loading.value = true;
-  etlTask(route.query.id).then((response) => {
-    nodeData.value = response.data;
-    nodeData.value.taskConfig = {
-      ...nodeData.value.taskConfig,
-      draftJson: nodeData.value.draftJson,
+  try {
+    const response = await (responsePromise || etlTask(taskId));
+    if (requestId !== loadRequestId) {
+      return;
+    }
+
+    const task = response?.data;
+    if (!task) {
+      throw new Error(td("dpp.integratioTask.taskLoadFailed", "Failed to load integration task"));
+    }
+
+    nodeData.value = {
+      ...task,
+      taskConfig: {
+        ...(task.taskConfig || {}),
+        draftJson: task.draftJson,
+      },
     };
     renderGraph(graph, nodeData.value);
+
     const currentTaskType = getTaskType(nodeData.value.draftJson);
     taskType.value = currentTaskType;
     treeData.value = [...getTreeData(currentTaskType)];
-    loading.value = false;
-  });
+  } catch (error) {
+    if (requestId === loadRequestId) {
+      console.error("Failed to load integration task configuration", error);
+      proxy.$modal.msgError(
+        error?.message ||
+          td("dpp.integratioTask.taskLoadFailed", "Failed to load integration task")
+      );
+    }
+  } finally {
+    if (requestId === loadRequestId) {
+      loading.value = false;
+    }
+  }
 }
 let userList = ref([]);
 let deptOptions = ref([]);
@@ -458,9 +483,6 @@ function getDeptTree() {
   deptUserTree().then((res) => {
     userList.value = res.data;
   });
-}
-if (route.query.id) {
-  getList();
 }
 // Save without code
 const closeDialog = () => {
@@ -1189,12 +1211,29 @@ onMounted(async () => {
   if (userStore.projectId) {
     getDeptTree();
   }
-  await initializeGraph();
+
+  // Start the task request before graph setup so network latency and canvas
+  // initialization overlap instead of blocking each other.
+  const taskId = route.query.id;
+  const taskRequest = taskId ? etlTask(taskId) : null;
+  initializeGraph();
+  graphReady = true;
   bindGraphEvents();
-  if (route.query.id) {
-    getList();
+  if (taskId) {
+    await getList(taskId, taskRequest);
   }
 });
+
+// Load only after the graph is ready so route changes cannot render into a
+// missing canvas or leave the page stuck behind the loading mask.
+watch(
+  () => route.query.id,
+  (newId, oldId) => {
+    if (newId && newId !== oldId && graphReady) {
+      getList(newId);
+    }
+  }
+);
 // Prompt when leaving the page
 onBeforeRouteLeave((to, from, next) => {
   // Check for unsaved changes

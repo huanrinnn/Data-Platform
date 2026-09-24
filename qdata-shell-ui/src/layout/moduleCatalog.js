@@ -174,6 +174,15 @@ for (const entry of fallbackModuleCatalog) {
   if (additions) entry.children.push(...additions)
 }
 
+const catalogByPath = new Map()
+const indexCatalog = (items) => {
+  items.forEach((item) => {
+    catalogByPath.set(item.path, item)
+    if (item.children) indexCatalog(item.children)
+  })
+}
+indexCatalog(fallbackModuleCatalog)
+
 export function resolveModuleTitle(route, fullPath) {
   const title = moduleTitleMap[fullPath] || route.meta?.title || route.name
   return title && !isGenericModuleTitle(title) ? title : ''
@@ -202,15 +211,6 @@ export function normalizeModuleRoutes(routes, parentPath = '') {
 }
 
 export function mergeModuleRoutes(routes) {
-  const catalogByPath = new Map()
-  const indexCatalog = (items) => {
-    items.forEach((item) => {
-      catalogByPath.set(item.path, item)
-      if (item.children) indexCatalog(item.children)
-    })
-  }
-  indexCatalog(fallbackModuleCatalog)
-
   const normalizedRoutes = normalizeModuleRoutes(routes)
   const mergeByPath = (items) => {
     const merged = []

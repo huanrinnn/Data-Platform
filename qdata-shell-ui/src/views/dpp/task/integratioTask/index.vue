@@ -639,7 +639,13 @@ const handleConfirm = (form) => {
     if (res.code == 200) {
       proxy.$modal.msgSuccess(td("common.message.msgOpSuccess", "Operation successful"));
       handleQuery();
-      routeTo("/dpp/task/integratioTask/edit", res.data);
+      if (res.data?.id) {
+        routeTo("/dpp/task/integratioTask/edit", { id: res.data.id });
+      } else {
+        proxy.$modal.msgError(
+          td("dpp.integratioTask.taskIdMissing", "Task was created but its ID is missing")
+        );
+      }
     }
   });
 };

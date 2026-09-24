@@ -101,7 +101,6 @@ import {
 import useUserStore from '@/store/system/user'
 import usePermissionStore from '@/store/system/permission'
 import ShellNavNode from './components/ShellNavNode.vue'
-import { mergeModuleRoutes } from './moduleCatalog'
 
 const route = useRoute()
 const router = useRouter()
@@ -111,11 +110,7 @@ const collapsed = ref(false)
 const searchText = ref('')
 
 const visibleRoutes = computed(() => {
-  // The permission store contains the same authorized route tree used by the
-  // legacy shell. The catalog only enriches labels and icons for those routes.
-  return permissionStore.sidebarRouters.length
-    ? mergeModuleRoutes(permissionStore.sidebarRouters)
-    : []
+  return permissionStore.sidebarRouters
 })
 
 const displayName = computed(() => userStore.nickName || userStore.name || '数据管理员')

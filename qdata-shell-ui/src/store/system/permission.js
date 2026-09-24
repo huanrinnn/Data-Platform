@@ -26,6 +26,13 @@ import { mergeModuleRoutes } from '@/layout/moduleCatalog';
 
 // Match all .vue files in views
 const modules = import.meta.glob('./../../views/**/*.vue');
+const viewModuleMap = Object.entries(modules).reduce((map, [path, moduleLoader]) => {
+    const viewPath = path.split('views/')[1]?.replace(/\.vue$/, '');
+    if (viewPath) {
+        map[viewPath] = moduleLoader;
+    }
+    return map;
+}, {});
 
 const usePermissionStore = defineStore('permission', {
     state: () => ({
@@ -59,7 +66,6 @@ const usePermissionStore = defineStore('permission', {
                     const sidebarRoutes = filterAsyncRouter(sdata);
                     const rewriteRoutes = filterAsyncRouter(rdata, false, true);
                     const defaultRoutes = filterAsyncRouter(defaultData);
-                    console.log('As------>',sidebarRoutes,rewriteRoutes,defaultRoutes);
                     const asyncRoutes = filterDynamicRoutes(dynamicRoutes);
                     asyncRoutes.forEach((route) => {
                         router.addRoute(route);
@@ -191,14 +197,8 @@ export function filterDynamicRoutes(routes) {
 }
 
 export const loadView = (view) => {
-    let res;
-    for (const path in modules) {
-        const dir = path.split('views/')[1].split('.vue')[0];
-        if (dir === view) {
-            res = () => modules[path]();
-        }
-    }
-    return res;
+    const moduleLoader = viewModuleMap[view];
+    return moduleLoader ? () => moduleLoader() : undefined;
 };
 
 export default usePermissionStore;

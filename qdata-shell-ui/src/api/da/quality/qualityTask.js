@@ -17,6 +17,7 @@
  */
 
 import request from '@/utils/request'
+import requestQuality from '@/utils/requestQuality'
 
 // Query data quality task list
 export function listDppQualityTask(query) {
@@ -88,8 +89,8 @@ export function validationValidDataSql(data) {
 }
 //Execute once
 export function startDppQualityTask(id) {
-  return request({
-    url: `/dpp/qualityTask//startDppQualityTask/${id}`,
+  return requestQuality({
+    url: `/quality/qualityTaskExecutor/runExecuteTask/${id}`,
     method: 'put',
   })
 }
