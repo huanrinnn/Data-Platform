@@ -238,7 +238,7 @@ const upload = reactive({
   // Set upload request headers
   headers: { Authorization: "Bearer " + getToken() },
   // Upload URL
-  url: import.meta.env.VITE_APP_BASE_API + "/att/attCleanCat/importData"
+  url: import.meta.env.VITE_APP_BASE_API + "/att/cleanCat/importData"
 });
 
 const data = reactive({
@@ -458,7 +458,7 @@ function handleDelete(row) {
 
 /** Export button operation */
 function handleExport() {
-  proxy.download('att/attCleanCat/export', {
+  proxy.download('att/cleanCat/export', {
     ...queryParams.value
   }, `AttCleanCat_${new Date().getTime()}.xlsx`)
 }

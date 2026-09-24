@@ -78,17 +78,17 @@
             <span class="live-indicator"><i></i>正常</span>
           </div>
           <div class="health-score">
-            <strong>98.6</strong>
+            <strong>{{ health.score }}</strong>
             <span>/ 100</span>
           </div>
-          <div class="health-bar"><i></i></div>
+          <div class="health-bar"><i :style="{ width: `${health.progress}%` }"></i></div>
           <div class="health-meta">
-            <span>服务可用性</span>
-            <strong>99.98%</strong>
+            <span>近 100 次任务成功率</span>
+            <strong>{{ health.successRate }}</strong>
           </div>
           <div class="health-meta">
-            <span>近 24 小时任务成功率</span>
-            <strong>96.4%</strong>
+            <span>最近任务样本</span>
+            <strong>{{ health.sampleSize }}</strong>
           </div>
           <button class="panel-link" type="button" @click="go('/monitor/server')">查看监控详情 <span>↗</span></button>
         </section>
@@ -112,9 +112,13 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import useUserStore from '@/store/system/user'
+import { listDaAsset } from '@/api/da/asset/asset'
+import { listDaDatasource } from '@/api/mc/dataSource/dataSource'
+import { listDppEtlTaskInstance } from '@/api/dpp/instance/job'
+import { listDsApi } from '@/api/ds/api/api'
 import {
   Coin,
   Connection,
@@ -129,12 +133,68 @@ const router = useRouter()
 const userStore = useUserStore()
 const displayName = computed(() => userStore.nickName || userStore.name || '数据管理员')
 
-const signals = [
-  { label: '数据资产', value: '1,284', detail: '较上月', change: '+12.8%', positive: true, tone: 'blue', icon: Coin },
-  { label: '活跃数据源', value: '36', detail: '已连接', change: '+4', positive: true, tone: 'green', icon: Connection },
-  { label: '运行中任务', value: '18', detail: '今日完成', change: '94.2%', positive: true, tone: 'orange', icon: Switch },
-  { label: 'API 服务', value: '72', detail: '对外服务', change: '3 待发布', positive: false, tone: 'violet', icon: Promotion }
+const metrics = ref({ assets: null, dataSources: null, runningTasks: null, apis: null, taskSuccessRate: null, taskSampleSize: 0 })
+const health = computed(() => {
+  const rate = metrics.value.taskSuccessRate
+  return {
+    score: rate === null ? '--' : rate.toFixed(1),
+    progress: rate === null ? 0 : Math.min(100, Math.max(0, rate)),
+    successRate: rate === null ? '--' : `${rate.toFixed(1)}%`,
+    sampleSize: metrics.value.taskSampleSize || '--'
+  }
+})
+
+const signalDefinitions = [
+  { label: '数据资产', metric: 'assets', permission: 'da:asset:list', detail: '当前可见', tone: 'blue', icon: Coin },
+  { label: '数据源', metric: 'dataSources', permission: 'da:dataSource:list', detail: '当前可见', tone: 'green', icon: Connection },
+  { label: '运行中任务', metric: 'runningTasks', permission: 'dpp:etlTaskInstance:list', detail: '实时状态', tone: 'orange', icon: Switch },
+  { label: 'API 服务', metric: 'apis', permission: 'ds:api:list', detail: '当前可见', tone: 'violet', icon: Promotion }
 ]
+const signals = computed(() => signalDefinitions
+  .filter((signal) => hasPermission(signal.permission))
+  .map((signal) => ({ ...signal, value: formatCount(metrics.value[signal.metric]), change: metrics.value[signal.metric] === null ? '加载中' : '实时统计', positive: true })))
+
+function hasPermission(permission) {
+  const permissions = userStore.permissions || []
+  return permissions.includes('*:*:*') || permissions.includes(permission)
+}
+function formatCount(value) {
+  return value === null ? '--' : Number(value).toLocaleString('en-US')
+}
+function getPageTotal(response) {
+  const page = response?.data || {}
+  const total = page.total ?? response?.total
+  return Number.isFinite(Number(total)) ? Number(total) : null
+}
+function getPageRows(response) {
+  return response?.data?.rows || response?.rows || []
+}
+function updateMetric(metric, response) {
+  const total = getPageTotal(response)
+  if (total !== null) metrics.value[metric] = total
+}
+function calculateTaskHealth(rows) {
+  const sample = rows.filter((row) => row.subTaskFlag !== '1')
+  const finished = sample.filter((row) => !['1', '2', '3', '4'].includes(String(row.status)))
+  const successful = finished.filter((row) => String(row.status) === '7')
+  metrics.value.taskSampleSize = sample.length
+  metrics.value.taskSuccessRate = finished.length ? (successful.length / finished.length) * 100 : null
+}
+async function loadOverviewMetrics() {
+  const requests = []
+  if (hasPermission('da:asset:list')) requests.push(listDaAsset({ pageNum: 1, pageSize: 1 }).then((response) => updateMetric('assets', response)))
+  if (hasPermission('da:dataSource:list')) requests.push(listDaDatasource({ pageNum: 1, pageSize: 1 }).then((response) => updateMetric('dataSources', response)))
+  if (hasPermission('dpp:etlTaskInstance:list')) {
+    requests.push(listDppEtlTaskInstance({ pageNum: 1, pageSize: 100, status: '1', taskType: '1', projectCode: userStore.projectCode })
+      .then((response) => {
+        updateMetric('runningTasks', response)
+        return listDppEtlTaskInstance({ pageNum: 1, pageSize: 100, taskType: '1', projectCode: userStore.projectCode, orderByColumn: 'start_time', isAsc: 'descending' })
+      })
+      .then((response) => calculateTaskHealth(getPageRows(response))))
+  }
+  if (hasPermission('ds:api:list')) requests.push(listDsApi({ pageNum: 1, pageSize: 1 }).then((response) => updateMetric('apis', response)))
+  await Promise.allSettled(requests)
+}
 
 const modules = [
   { index: '01', title: '数据资产', description: '统一查看、盘点和管理全域数据资产。', path: '/da/asset', tone: 'blue', icon: Coin },
@@ -161,6 +221,8 @@ const shortcuts = [
 function go(path) {
   router.push(path)
 }
+
+onMounted(loadOverviewMetrics)
 </script>
 
 <style scoped>
@@ -500,7 +562,7 @@ h1 {
 
 .health-bar i {
   display: block;
-  width: 98.6%;
+  width: 0;
   height: 100%;
   border-radius: inherit;
   background: #38b67c;

@@ -541,6 +541,7 @@ import useUserStore from "@/store/system/user";
 import { addUserAndProject, noProjectUser } from "@/api/att/project/project.js";
 import { ref } from "vue";
 import useDefaultLang from "@/composables/useDefaultLang";
+import { shellStorageKey } from "@/utils/storage";
 const { td } = useDefaultLang();
 const { proxy } = getCurrentInstance();
 const { sys_normal_disable, sys_user_sex } = proxy.useDict(
@@ -608,7 +609,7 @@ const upload = reactive({
   // Set upload request headers
   headers: { Authorization: "Bearer " + getToken() },
   // Upload address
-  url: import.meta.env.VITE_APP_BASE_API + "/att/AttProjectUserRel/importData",
+  url: import.meta.env.VITE_APP_BASE_API + "/att/projectUserRel/importData",
 });
 const createTime = ref(null);
 const data = reactive({
@@ -655,11 +656,17 @@ const data = reactive({
 
 const { queryParams, queryParamsUser, form, rules } = toRefs(data);
 let addUserAdnProject = ref(false);
+
+function getStoredProjectId() {
+  const projectId = Number(localStorage.getItem(shellStorageKey("qdataProjectId")));
+  return Number.isFinite(projectId) && projectId > 0 ? projectId : null;
+}
+
 // Monitor projectId changes in userStore
 watch(
   () => userStore.projectId,
   (newValue, oldValue) => {
-    if (newValue !== oldValue) {
+    if (newValue !== oldValue || (!queryParams.value.projectId && newValue)) {
       console.log(userStore.projectCode, "userStore.projectCode");
 
       queryParams.value.projectId = newValue;
@@ -669,6 +676,13 @@ watch(
   },
   { immediate: true }
 );
+
+if (!userStore.projectId) {
+  const storedProjectId = getStoredProjectId();
+  if (storedProjectId) {
+    userStore.projectId = storedProjectId;
+  }
+}
 function handleDateChange(value) {
   queryParams.value.startTime = value[0];
   queryParams.value.endTime = value[1];
@@ -679,8 +693,9 @@ function getList() {
   if (queryParams.value.projectId) {
     listAttProjectUserRel(queryParams.value, warningRequestOptions)
       .then((response) => {
-        AttProjectUserRelList.value = response?.data?.rows || [];
-        total.value = response?.data?.total || 0;
+        const page = response?.data || response || {};
+        AttProjectUserRelList.value = page.rows || page.list || [];
+        total.value = page.total || 0;
       })
       .catch(showRequestWarning)
       .finally(() => {
@@ -983,7 +998,7 @@ function showDeleteDisabledMessage(rows) {
 /** Export button action */
 function handleExport() {
   proxy.download(
-    "att/AttProjectUserRel/export",
+    "att/projectUserRel/export",
     {
       ...queryParams.value,
     },

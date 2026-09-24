@@ -21,7 +21,7 @@ import request from '@/utils/request'
 // Query data assets-video data list
 export function listDaAssetVideo(query) {
   return request({
-    url: '/da/daAssetVideo/list',
+    url: '/da/assetVideo/list',
     method: 'get',
     params: query
   })
@@ -30,7 +30,7 @@ export function listDaAssetVideo(query) {
 // Query data assets-video data details
 export function getDaAssetVideo(id) {
   return request({
-    url: '/da/daAssetVideo/' + id,
+    url: '/da/assetVideo/' + id,
     method: 'get'
   })
 }
@@ -38,7 +38,7 @@ export function getDaAssetVideo(id) {
 // New data asset-video data
 export function addDaAssetVideo(data) {
   return request({
-    url: '/da/daAssetVideo',
+    url: '/da/assetVideo',
     method: 'post',
     data: data
   })
@@ -47,7 +47,7 @@ export function addDaAssetVideo(data) {
 // Modify data assets-video data
 export function updateDaAssetVideo(data) {
   return request({
-    url: '/da/daAssetVideo',
+    url: '/da/assetVideo',
     method: 'put',
     data: data
   })
@@ -56,7 +56,7 @@ export function updateDaAssetVideo(data) {
 // Delete data asset - video data
 export function delDaAssetVideo(id) {
   return request({
-    url: '/da/daAssetVideo/' + id,
+    url: '/da/assetVideo/' + id,
     method: 'delete'
   })
 }

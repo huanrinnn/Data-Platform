@@ -871,7 +871,7 @@ const router = useRouter();
 const userStore = useUserStore();
 const projectStore = useProjectStore();
 const route = useRoute();
-let type = route.query.type || null;
+const type = route.query.type ?? 0;
 
 const data = reactive({
   form: {},

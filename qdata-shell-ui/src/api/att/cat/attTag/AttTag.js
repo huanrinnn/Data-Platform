@@ -21,7 +21,7 @@ import request from '@/utils/request'
 // Query tag management list
 export function listAttTag(query) {
   return request({
-    url: '/att/AttTag/list',
+    url: '/att/tag/list',
     method: 'get',
     params: query
   })
@@ -37,7 +37,7 @@ export function listDict(query) {
 // Query tag management details
 export function getAttTag(id) {
   return request({
-    url: '/att/AttTag/' + id,
+    url: '/att/tag/' + id,
     method: 'get'
   })
 }
@@ -45,7 +45,7 @@ export function getAttTag(id) {
 // Add tag management
 export function addAttTag(data) {
   return request({
-    url: '/att/AttTag',
+    url: '/att/tag',
     method: 'post',
     data: data
   })
@@ -54,7 +54,7 @@ export function addAttTag(data) {
 // Modify tag management
 export function updateAttTag(data) {
   return request({
-    url: '/att/AttTag',
+    url: '/att/tag',
     method: 'put',
     data: data
   })
@@ -63,7 +63,7 @@ export function updateAttTag(data) {
 // Delete tag management
 export function delAttTag(id) {
   return request({
-    url: '/att/AttTag/' + id,
+    url: '/att/tag/' + id,
     method: 'delete'
   })
 }

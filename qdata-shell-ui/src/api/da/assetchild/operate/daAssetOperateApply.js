@@ -21,7 +21,7 @@ import request from '@/utils/request'
 // Query data asset operation application list
 export function listDaAssetOperateApply(query) {
   return request({
-    url: '/da/daAssetOperateApply/list',
+    url: '/da/assetOperateApply/list',
     method: 'get',
     params: query
   })
@@ -30,7 +30,7 @@ export function listDaAssetOperateApply(query) {
 // Query data asset operation application details
 export function getDaAssetOperateApply(id) {
   return request({
-    url: '/da/daAssetOperateApply/' + id,
+    url: '/da/assetOperateApply/' + id,
     method: 'get'
   })
 }
@@ -38,7 +38,7 @@ export function getDaAssetOperateApply(id) {
 // Add new data asset operation application
 export function addDaAssetOperateApply(data) {
   return request({
-    url: '/da/daAssetOperateApply',
+    url: '/da/assetOperateApply',
     method: 'post',
     data: data
   })
@@ -47,7 +47,7 @@ export function addDaAssetOperateApply(data) {
 // Modify data asset operation application
 export function updateDaAssetOperateApply(data) {
   return request({
-    url: '/da/daAssetOperateApply',
+    url: '/da/assetOperateApply',
     method: 'put',
     data: data
   })
@@ -56,7 +56,7 @@ export function updateDaAssetOperateApply(data) {
 // Delete data asset operation application
 export function delDaAssetOperateApply(id) {
   return request({
-    url: '/da/daAssetOperateApply/' + id,
+    url: '/da/assetOperateApply/' + id,
     method: 'delete'
   })
 }

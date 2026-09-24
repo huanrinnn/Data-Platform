@@ -525,7 +525,7 @@ function handleDeleteAll() {
 /** Export button action */
 function handleExport() {
   proxy.download(
-    "att/AttTag/export",
+    "att/tag/export",
     {
       ...queryParams.value,
     },

@@ -470,7 +470,7 @@ const upload = reactive({
   // Set upload request headers
   headers: { Authorization: "Bearer " + getToken() },
   // Upload URL
-  url: import.meta.env.VITE_APP_BASE_API + "/da/daAssetApply/importData",
+  url: import.meta.env.VITE_APP_BASE_API + "/da/assetApply/importData",
 });
 
 const data = reactive({
@@ -701,7 +701,7 @@ function handleDelete(row) {
 /** Export button operation */
 function handleExport() {
   proxy.download(
-    "da/daAssetApply/export",
+    "da/assetApply/export",
     {
       ...queryParams.value,
     },

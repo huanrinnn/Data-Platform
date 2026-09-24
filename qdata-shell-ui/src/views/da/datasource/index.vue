@@ -1002,7 +1002,8 @@ const projectTableRef = ref(null);
 const loadingProject = ref(false);
 const projectIdAndCodeList = ref([]);
 const route = useRoute();
-let type = route.query.type || null;
+const type = route.query.type ?? 0;
+const isProjectDatasourcePage = () => String(type) === "1";
 let isDatasourcePageActive = true;
 
 onActivated(() => {
@@ -1030,7 +1031,7 @@ const upload = reactive({
   // Set upload request headers
   headers: { Authorization: "Bearer " + getToken() },
   // Upload URL
-  url: import.meta.env.VITE_APP_BASE_API + "/da/daDatasource/importData",
+  url: import.meta.env.VITE_APP_BASE_API + "/da/dataSource/importData",
 });
 
 async function ensureActiveProjectContext() {
@@ -1248,7 +1249,7 @@ function resetQueryProject() {
 /** Query data source list */
 async function getList() {
   loading.value = true;
-  if (type == 1) {
+  if (isProjectDatasourcePage()) {
     await ensureActiveProjectContext();
     queryParams.value.projectId = userStore.projectId;
     queryParams.value.projectCode = userStore.projectCode;
@@ -1331,7 +1332,7 @@ function handleSortChange(column, prop, order) {
 /** Add button operation */
 async function handleAdd() {
   reset();
-  if (type == 1) {
+  if (isProjectDatasourcePage()) {
     await ensureActiveProjectContext();
     form.value.isDaOrDpp = true;
     form.value.projectList = [
@@ -1544,10 +1545,17 @@ function handleDelete(row) {
   proxy.$modal
     .confirm(td('da.datasource.confirmDelete', '', { id: _ids }))
     .then(function () {
-      return removeDppOrDa(_ids, type);
+      return isProjectDatasourcePage()
+        ? removeDppOrDa(_ids, type)
+        : delDaDatasource(_ids);
     })
     .then(() => {
-      getList();
+      if (total.value > 0 && daDatasourceList.value.length === 1 && queryParams.value.pageNum > 1) {
+        queryParams.value.pageNum -= 1;
+      }
+      return getList();
+    })
+    .then(() => {
       proxy.$modal.msgSuccess(td('da.datasource.deleteSuccess'));
     })
     .catch(() => {});
@@ -1556,7 +1564,7 @@ function handleDelete(row) {
 /** Export button operation */
 function handleExport() {
   proxy.download(
-    "da/daDatasource/export",
+    "da/dataSource/export",
     {
       ...queryParams.value,
     },

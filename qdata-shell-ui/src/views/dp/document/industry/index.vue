@@ -656,7 +656,7 @@ function handleDpDataElemRuleRelSelectionChange(selection) {
 /** Export button action */
 function handleExport() {
   proxy.download(
-    "dp/dpDataElem/export",
+    "dp/dataElem/export",
     {
       ...queryParams.value,
     },

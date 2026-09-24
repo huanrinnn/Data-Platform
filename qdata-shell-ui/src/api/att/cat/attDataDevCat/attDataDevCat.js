@@ -21,7 +21,7 @@ import request from '@/utils/request'
 // Query the data development category management list
 export function listAttDataDevCat(query) {
   return request({
-    url: '/att/AttDataDevCat/list',
+    url: '/att/dataDevCat/list',
     method: 'get',
     params: query
   })
@@ -30,7 +30,7 @@ export function listAttDataDevCat(query) {
 // Query data development category management details
 export function getAttDataDevCat(id) {
   return request({
-    url: '/att/AttDataDevCat/' + id,
+    url: '/att/dataDevCat/' + id,
     method: 'get'
   })
 }
@@ -38,7 +38,7 @@ export function getAttDataDevCat(id) {
 // Added new data development category management
 export function addAttDataDevCat(data) {
   return request({
-    url: '/att/AttDataDevCat',
+    url: '/att/dataDevCat',
     method: 'post',
     data: data
   })
@@ -47,7 +47,7 @@ export function addAttDataDevCat(data) {
 // Modify data development category management
 export function updateAttDataDevCat(data) {
   return request({
-    url: '/att/AttDataDevCat',
+    url: '/att/dataDevCat',
     method: 'put',
     data: data
   })
@@ -56,7 +56,7 @@ export function updateAttDataDevCat(data) {
 // Delete data development category management
 export function delAttDataDevCat(id) {
   return request({
-    url: '/att/AttDataDevCat/' + id,
+    url: '/att/dataDevCat/' + id,
     method: 'delete'
   })
 }

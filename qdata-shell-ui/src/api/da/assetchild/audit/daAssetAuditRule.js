@@ -21,7 +21,7 @@ import request from '@/utils/request'
 // Query data asset quality result record list
 export function listDaAssetAuditRule(query) {
   return request({
-    url: '/da/daAssetAuditRule/list',
+    url: '/da/assetAuditRule/list',
     method: 'get',
     params: query
   })
@@ -30,7 +30,7 @@ export function listDaAssetAuditRule(query) {
 // Query data asset quality result record details
 export function getDaAssetAuditRule(id) {
   return request({
-    url: '/da/daAssetAuditRule/' + id,
+    url: '/da/assetAuditRule/' + id,
     method: 'get'
   })
 }
@@ -38,7 +38,7 @@ export function getDaAssetAuditRule(id) {
 // Added new data asset quality result record
 export function addDaAssetAuditRule(data) {
   return request({
-    url: '/da/daAssetAuditRule',
+    url: '/da/assetAuditRule',
     method: 'post',
     data: data
   })
@@ -47,7 +47,7 @@ export function addDaAssetAuditRule(data) {
 // Modify data asset quality result records
 export function updateDaAssetAuditRule(data) {
   return request({
-    url: '/da/daAssetAuditRule',
+    url: '/da/assetAuditRule',
     method: 'put',
     data: data
   })
@@ -56,7 +56,7 @@ export function updateDaAssetAuditRule(data) {
 // Delete data asset quality result records
 export function delDaAssetAuditRule(id) {
   return request({
-    url: '/da/daAssetAuditRule/' + id,
+    url: '/da/assetAuditRule/' + id,
     method: 'delete'
   })
 }

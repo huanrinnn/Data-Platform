@@ -21,7 +21,7 @@ import request from '@/utils/request'
 // Query Data Assets - List of Geospatial Services
 export function listDaAssetGis(query) {
   return request({
-    url: '/da/daAssetGis/list',
+    url: '/da/assetGis/list',
     method: 'get',
     params: query
   })
@@ -30,7 +30,7 @@ export function listDaAssetGis(query) {
 // Query data assets-Geospatial service details
 export function getDaAssetGis(id) {
   return request({
-    url: '/da/daAssetGis/' + id,
+    url: '/da/assetGis/' + id,
     method: 'get'
   })
 }
@@ -38,7 +38,7 @@ export function getDaAssetGis(id) {
 // New data assets-Geospatial services
 export function addDaAssetGis(data) {
   return request({
-    url: '/da/daAssetGis',
+    url: '/da/assetGis',
     method: 'post',
     data: data
   })
@@ -47,7 +47,7 @@ export function addDaAssetGis(data) {
 // Modify Data Assets - Geospatial Services
 export function updateDaAssetGis(data) {
   return request({
-    url: '/da/daAssetGis',
+    url: '/da/assetGis',
     method: 'put',
     data: data
   })
@@ -56,7 +56,7 @@ export function updateDaAssetGis(data) {
 // Delete Data Assets - Geospatial Services
 export function delDaAssetGis(id) {
   return request({
-    url: '/da/daAssetGis/' + id,
+    url: '/da/assetGis/' + id,
     method: 'delete'
   })
 }

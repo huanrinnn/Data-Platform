@@ -18,6 +18,7 @@
 
 <template>
   <div class="app-container" ref="app-container">
+    <ProjectSwitcher />
     <div class="pagecont-top" v-show="showSearch">
       <el-form
         class="btn-style"
@@ -507,6 +508,7 @@
 </template>
 
 <script setup name="DataDevCat">
+import ProjectSwitcher from "@/views/dpp/components/ProjectSwitcher.vue";
 import {
   ref,
   reactive,
@@ -651,7 +653,7 @@ const upload = reactive({
   // Set upload request headers
   headers: { Authorization: "Bearer " + getToken() },
   // Upload address
-  url: import.meta.env.VITE_APP_BASE_API + "/att/AttDataDevCat/importData",
+  url: import.meta.env.VITE_APP_BASE_API + "/att/dataDevCat/importData",
 });
 
 const data = reactive({
@@ -996,7 +998,7 @@ function handleDelete(row) {
 /** Export button action */
 function handleExport() {
   proxy.download(
-    "att/AttDataDevCat/export",
+    "att/dataDevCat/export",
     {
       ...queryParams.value,
     },

@@ -18,6 +18,7 @@
 
 <template>
   <div class="app-container" ref="app-container">
+    <ProjectSwitcher />
     <el-tabs v-model="activeName" class="demo-tabs">
       <el-tab-pane
         :label="td('dpp.setting.projectUserRel.projectMember')"
@@ -38,6 +39,7 @@
 <script setup name="index">
 import { ref } from "vue";
 import useDefaultLang from "@/composables/useDefaultLang";
+import ProjectSwitcher from "@/views/dpp/components/ProjectSwitcher.vue";
 import Role from "@/views/dpp/setting/projectUserRel/role.vue";
 import User from "@/views/dpp/setting/projectUserRel/user.vue";
 

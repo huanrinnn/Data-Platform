@@ -197,12 +197,42 @@ public class IAttProjectServiceImpl extends ServiceImpl<AttProjectMapper, AttPro
 
     @Override
     public int removeAttProject(Collection<Long> idList) {
-        QueryWrapper<AttProjectUserRelDO> projectWrapper = new QueryWrapper<>();
-        projectWrapper.in(!CollectionUtils.isEmpty(idList), "project_id", idList);
-        List<AttProjectUserRelDO> attProjectUserRelDOList = attProjectUserRelMapper.selectList(projectWrapper);
-        if (attProjectUserRelDOList.size() > 0) {
-            return -1;
+        if (CollectionUtils.isEmpty(idList)) {
+            return 0;
         }
+
+        QueryWrapper<AttProjectUserRelDO> projectWrapper = new QueryWrapper<>();
+        projectWrapper.in("project_id", idList);
+        List<AttProjectUserRelDO> attProjectUserRelDOList = attProjectUserRelMapper.selectList(projectWrapper);
+
+        // Project members and project-scoped roles are owned by the project.
+        // Remove their access records in this transaction before deleting the project.
+        List<Long> roleIds = new ArrayList<>();
+        for (Long projectId : idList) {
+            List<SysRole> projectRoles = sysRoleMapper.selectRoleAllByProjectId(projectId);
+            roleIds.addAll(projectRoles.stream()
+                    .map(SysRole::getRoleId)
+                    .filter(java.util.Objects::nonNull)
+                    .collect(Collectors.toList()));
+        }
+        roleIds = roleIds.stream().distinct().collect(Collectors.toList());
+        if (!roleIds.isEmpty()) {
+            Long[] roleIdArray = roleIds.toArray(new Long[0]);
+            sysRoleMenuMapper.deleteRoleMenu(roleIdArray);
+            sysUserRoleMapper.deleteUserRoleByRoleIds(roleIds);
+            sysRoleMapper.deleteRoleByIds(roleIdArray);
+        }
+
+        if (!attProjectUserRelDOList.isEmpty()) {
+            List<Long> relationIds = attProjectUserRelDOList.stream()
+                    .map(AttProjectUserRelDO::getId)
+                    .filter(java.util.Objects::nonNull)
+                    .collect(Collectors.toList());
+            if (!relationIds.isEmpty()) {
+                attProjectUserRelMapper.deleteBatchIds(relationIds);
+            }
+        }
+
         int i = attProjectMapper.deleteBatchIds(idList);
         // Batch delete project
         return i;

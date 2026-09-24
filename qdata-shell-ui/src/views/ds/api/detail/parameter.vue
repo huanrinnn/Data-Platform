@@ -450,7 +450,7 @@ function handleDelete(row) {
 /** Export button action */
 function handleExport() {
     proxy.download(
-        'ds/dsApi/export',
+        'ds/api/export',
         {
             ...queryParams.value
         },

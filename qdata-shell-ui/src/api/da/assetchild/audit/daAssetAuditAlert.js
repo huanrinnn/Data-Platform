@@ -21,7 +21,7 @@ import request from '@/utils/request'
 // Query data assets-quality warning list
 export function listDaAssetAuditAlert(query) {
   return request({
-    url: '/da/daAssetAuditAlert/list',
+    url: '/da/assetAuditAlert/list',
     method: 'get',
     params: query
   })
@@ -30,7 +30,7 @@ export function listDaAssetAuditAlert(query) {
 // Query data assets-quality warning details
 export function getDaAssetAuditAlert(id) {
   return request({
-    url: '/da/daAssetAuditAlert/' + id,
+    url: '/da/assetAuditAlert/' + id,
     method: 'get'
   })
 }
@@ -38,7 +38,7 @@ export function getDaAssetAuditAlert(id) {
 // New data assets-quality warning
 export function addDaAssetAuditAlert(data) {
   return request({
-    url: '/da/daAssetAuditAlert',
+    url: '/da/assetAuditAlert',
     method: 'post',
     data: data
   })
@@ -47,7 +47,7 @@ export function addDaAssetAuditAlert(data) {
 // Modify data assets-quality warning
 export function updateDaAssetAuditAlert(data) {
   return request({
-    url: '/da/daAssetAuditAlert',
+    url: '/da/assetAuditAlert',
     method: 'put',
     data: data
   })
@@ -56,7 +56,7 @@ export function updateDaAssetAuditAlert(data) {
 // Deleting data assets-quality warning
 export function delDaAssetAuditAlert(id) {
   return request({
-    url: '/da/daAssetAuditAlert/' + id,
+    url: '/da/assetAuditAlert/' + id,
     method: 'delete'
   })
 }

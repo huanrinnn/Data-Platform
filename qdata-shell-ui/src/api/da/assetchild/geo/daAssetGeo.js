@@ -21,7 +21,7 @@ import request from '@/utils/request'
 // Query data assets - vector list
 export function listDaAssetGeo(query) {
   return request({
-    url: '/da/daAssetGeo/list',
+    url: '/da/assetGeo/list',
     method: 'get',
     params: query
   })
@@ -30,7 +30,7 @@ export function listDaAssetGeo(query) {
 // Query data assets - vector detailed
 export function getDaAssetGeo(id) {
   return request({
-    url: '/da/daAssetGeo/' + id,
+    url: '/da/assetGeo/' + id,
     method: 'get'
   })
 }
@@ -38,7 +38,7 @@ export function getDaAssetGeo(id) {
 // New data asset-vector
 export function addDaAssetGeo(data) {
   return request({
-    url: '/da/daAssetGeo',
+    url: '/da/assetGeo',
     method: 'post',
     data: data
   })
@@ -47,7 +47,7 @@ export function addDaAssetGeo(data) {
 // Modify data assets - vector
 export function updateDaAssetGeo(data) {
   return request({
-    url: '/da/daAssetGeo',
+    url: '/da/assetGeo',
     method: 'put',
     data: data
   })
@@ -56,7 +56,7 @@ export function updateDaAssetGeo(data) {
 // Delete data assets - vector
 export function delDaAssetGeo(id) {
   return request({
-    url: '/da/daAssetGeo/' + id,
+    url: '/da/assetGeo/' + id,
     method: 'delete'
   })
 }

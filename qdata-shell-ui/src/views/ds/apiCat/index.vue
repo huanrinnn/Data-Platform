@@ -353,7 +353,7 @@ const upload = reactive({
     // Set upload request headers
     headers: { Authorization: 'Bearer ' + getToken() },
     // Upload address
-    url: import.meta.env.VITE_APP_BASE_API + '/att/AttApiCat/importData'
+    url: import.meta.env.VITE_APP_BASE_API + '/att/apiCat/importData'
 });
 
 const data = reactive({
@@ -554,7 +554,7 @@ function handleDelete(row) {
 /** Export button action */
 function handleExport() {
     proxy.download(
-        'att/AttApiCat/export',
+        'att/apiCat/export',
         {
             ...queryParams.value
         },

@@ -18,6 +18,7 @@
 
 <template>
   <div class="app-container" ref="app-container">
+    <ProjectSwitcher />
     <el-container style="90%">
       <DeptTree
         ref="DeptTreeRef"
@@ -344,6 +345,7 @@
 </template>
 
 <script setup name="Integratio">
+import ProjectSwitcher from "@/views/dpp/components/ProjectSwitcher.vue";
 import {
   defineEmits,
   defineProps,
@@ -482,7 +484,7 @@ const upload = reactive({
   // Set upload request headers
   headers: { Authorization: "Bearer " + getToken() },
   // Upload address
-  url: import.meta.env.VITE_APP_BASE_API + "/dpp/dppEtlTaskLog/importData",
+  url: import.meta.env.VITE_APP_BASE_API + "/dpp/etlTaskLog/importData",
 });
 
 const data = reactive({

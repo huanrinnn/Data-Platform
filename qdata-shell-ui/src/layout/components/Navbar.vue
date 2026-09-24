@@ -443,7 +443,9 @@ const data = reactive({
   },
 });
 const { width } = useWindowSize();
-const showProjectSelector = computed(() => width.value >= 1200 && isFlag.value);
+const showProjectSelector = computed(
+  () => width.value >= 1200 && (isFlag.value || route.path.startsWith("/dpp"))
+);
 const open = ref(false);
 const title = ref(null);
 const form = ref({});

@@ -66,6 +66,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		</foreach>
  	</delete>
 
+	<delete id="deleteUserRoleByRoleIds">
+		delete from system_user_role where role_id in
+		<foreach collection="roleIds" item="roleId" open="(" separator="," close=")">
+			#{roleId}
+		</foreach>
+	</delete>
+
 	<insert id="batchUserRole">
 		insert into system_user_role(user_id, role_id) values
 		<foreach item="item" index="index" collection="list" separator=",">

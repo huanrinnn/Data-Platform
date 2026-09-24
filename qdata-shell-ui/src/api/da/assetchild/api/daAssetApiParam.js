@@ -21,7 +21,7 @@ import request from '@/utils/request'
 // Query data assets-external API-parameter list
 export function listDaAssetApiParam(query) {
   return request({
-    url: '/da/daAssetApiParam/list',
+    url: '/da/assetApiParam/list',
     method: 'get',
     params: query
   })
@@ -30,7 +30,7 @@ export function listDaAssetApiParam(query) {
 // Query data assets-external API-parameter details
 export function getDaAssetApiParam(id) {
   return request({
-    url: '/da/daAssetApiParam/' + id,
+    url: '/da/assetApiParam/' + id,
     method: 'get'
   })
 }
@@ -38,7 +38,7 @@ export function getDaAssetApiParam(id) {
 // New data assets-external API-parameters
 export function addDaAssetApiParam(data) {
   return request({
-    url: '/da/daAssetApiParam',
+    url: '/da/assetApiParam',
     method: 'post',
     data: data
   })
@@ -47,7 +47,7 @@ export function addDaAssetApiParam(data) {
 // Modify data assets-external API-parameters
 export function updateDaAssetApiParam(data) {
   return request({
-    url: '/da/daAssetApiParam',
+    url: '/da/assetApiParam',
     method: 'put',
     data: data
   })
@@ -56,7 +56,7 @@ export function updateDaAssetApiParam(data) {
 // Delete Data Asset-External API-Parameter
 export function delDaAssetApiParam(id) {
   return request({
-    url: '/da/daAssetApiParam/' + id,
+    url: '/da/assetApiParam/' + id,
     method: 'delete'
   })
 }

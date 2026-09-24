@@ -18,6 +18,7 @@
 
 <template>
   <div class="app-container" ref="app-container">
+    <ProjectSwitcher />
     <GuideTip tip-id="dpp/dppAsset.list" />
 
     <el-container style="90%">
@@ -629,6 +630,7 @@
   </div>
 </template>
 <script setup name="DppAsset">
+import ProjectSwitcher from "@/views/dpp/components/ProjectSwitcher.vue";
 import useDefaultLang from "@/composables/useDefaultLang";
 const { td } = useDefaultLang();
 import {
@@ -649,6 +651,7 @@ import { listAttAssetCat } from "@/api/att/cat/assetCat/assetCat.js";
 import { getToken } from "@/utils/auth.js";
 import { addDaAssetApply } from "@/api/da/assetApply/assetApply";
 import useUserStore from "@/store/system/user";
+import { shellStorageKey } from "@/utils/storage";
 import { getThemeList } from "@/api/att/theme/theme.js";
 import OverflowTooltip from "@/components/OverflowTooltip";
 const { proxy } = getCurrentInstance();
@@ -713,7 +716,33 @@ const defaultSort = ref({ prop: "create_time", order: "desc" });
 const router = useRouter();
 const userStore = useUserStore();
 const route = useRoute();
-let type = route.query.type || null;
+const type = route.query.type ?? 1;
+
+async function ensureActiveProjectContext() {
+  if (userStore.projectId && userStore.projectCode) {
+    return true;
+  }
+
+  const response = await currentUser();
+  const projectOptions = Array.isArray(response.data) ? response.data : [];
+  if (projectOptions.length === 0) {
+    userStore.projectId = null;
+    userStore.projectCode = "";
+    localStorage.removeItem(shellStorageKey("qdataProjectId"));
+    return false;
+  }
+
+  const storedProjectId = Number(localStorage.getItem(shellStorageKey("qdataProjectId")));
+  const storedProject = Number.isFinite(storedProjectId)
+    ? projectOptions.find((item) => item.id === storedProjectId)
+    : null;
+  const selectedProject = storedProject || projectOptions[0];
+
+  userStore.projectId = selectedProject.id;
+  userStore.projectCode = selectedProject.code;
+  localStorage.setItem(shellStorageKey("qdataProjectId"), String(selectedProject.id));
+  return true;
+}
 // icon
 const getDatasourceIcon = (type) => {
   switch (type) {
@@ -762,7 +791,7 @@ const upload = reactive({
   // Set upload request headers
   headers: { Authorization: "Bearer " + getToken() },
   // Upload address
-  url: import.meta.env.VITE_APP_BASE_API + "/da/daAsset/importData",
+  url: import.meta.env.VITE_APP_BASE_API + "/da/asset/importData",
 });
 const options = [
   {
@@ -876,15 +905,15 @@ function handleSelectProject(value) {
 }
 
 /** Query data asset list */
-function getList() {
+async function getList() {
   if (!queryParams.value?.orderByColumn) {
     queryParams.value.orderByColumn = defaultSort.value.prop;
     queryParams.value.isAsc = defaultSort.value.order;
   }
   loading.value = true;
-  console.log(type);
 
   if (type == 1) {
+    await ensureActiveProjectContext();
     queryParams.value.projectCode = userStore.projectCode;
     queryParams.value.projectId = userStore.projectId;
     listDppAsset(queryParams.value).then((response) => {

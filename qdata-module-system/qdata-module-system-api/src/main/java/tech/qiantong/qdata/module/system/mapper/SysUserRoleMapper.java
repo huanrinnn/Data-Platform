@@ -47,6 +47,14 @@ public interface SysUserRoleMapper
     public int deleteUserRoleList(@Param("sysUserRoleList") List<SysUserRole> sysUserRoleList);
 
     /**
+     * Batch delete user-role associations by role IDs.
+     *
+     * @param roleIds role IDs to delete
+     * @return result
+     */
+    public int deleteUserRoleByRoleIds(@Param("roleIds") List<Long> roleIds);
+
+    /**
      * Query user-role information by user ID list
      *
      * @param userIdList user ID list

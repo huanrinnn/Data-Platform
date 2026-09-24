@@ -21,7 +21,7 @@ import request from '@/utils/request.js'
 // Query the data asset document category management list
 export function listAttDocCat(query) {
   return request({
-    url: '/att/AttDocCat/list',
+    url: '/att/documentCat/list',
     method: 'get',
     params: query
   })
@@ -30,7 +30,7 @@ export function listAttDocCat(query) {
 // Query data asset document category management details
 export function getAttDocCat(id) {
   return request({
-    url: '/att/AttDocCat/' + id,
+    url: '/att/documentCat/' + id,
     method: 'get'
   })
 }
@@ -38,7 +38,7 @@ export function getAttDocCat(id) {
 // Added new data asset document category management
 export function addAttDocCat(data) {
   return request({
-    url: '/att/AttDocCat',
+    url: '/att/documentCat',
     method: 'post',
     data: data
   })
@@ -47,7 +47,7 @@ export function addAttDocCat(data) {
 // Modify data asset document category management
 export function updateAttDocCat(data) {
   return request({
-    url: '/att/AttDocCat',
+    url: '/att/documentCat',
     method: 'put',
     data: data
   })
@@ -56,7 +56,7 @@ export function updateAttDocCat(data) {
 // Delete data asset document category management
 export function delAttDocCat(id) {
   return request({
-    url: '/att/AttDocCat/' + id,
+    url: '/att/documentCat/' + id,
     method: 'delete'
   })
 }

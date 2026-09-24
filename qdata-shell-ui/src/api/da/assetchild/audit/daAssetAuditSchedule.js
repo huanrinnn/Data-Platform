@@ -21,7 +21,7 @@ import request from '@/utils/request'
 // Query the asset audit schedule list
 export function listDaAssetAuditSchedule(query) {
   return request({
-    url: '/da/daAssetAuditSchedule/list',
+    url: '/da/assetAuditSchedule/list',
     method: 'get',
     params: query
   })
@@ -30,7 +30,7 @@ export function listDaAssetAuditSchedule(query) {
 // Query asset audit schedule details
 export function getDaAssetAuditSchedule(id) {
   return request({
-    url: '/da/daAssetAuditSchedule/' + id,
+    url: '/da/assetAuditSchedule/' + id,
     method: 'get'
   })
 }
@@ -38,7 +38,7 @@ export function getDaAssetAuditSchedule(id) {
 // Added asset audit schedule
 export function addDaAssetAuditSchedule(data) {
   return request({
-    url: '/da/daAssetAuditSchedule',
+    url: '/da/assetAuditSchedule',
     method: 'post',
     data: data
   })
@@ -47,7 +47,7 @@ export function addDaAssetAuditSchedule(data) {
 // Modify asset audit schedule
 export function updateDaAssetAuditSchedule(data) {
   return request({
-    url: '/da/daAssetAuditSchedule',
+    url: '/da/assetAuditSchedule',
     method: 'put',
     data: data
   })
@@ -56,7 +56,7 @@ export function updateDaAssetAuditSchedule(data) {
 // Delete asset audit schedule
 export function delDaAssetAuditSchedule(id) {
   return request({
-    url: '/da/daAssetAuditSchedule/' + id,
+    url: '/da/assetAuditSchedule/' + id,
     method: 'delete'
   })
 }

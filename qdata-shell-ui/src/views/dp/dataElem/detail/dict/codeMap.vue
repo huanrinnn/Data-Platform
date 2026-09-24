@@ -339,7 +339,7 @@ function handleDelete(row) {
 /** Export button action */
 function handleExport() {
     proxy.download(
-        'dp/dpCodeMap/export',
+        'dp/codeMap/export',
         {
             ...queryParams.value
         },

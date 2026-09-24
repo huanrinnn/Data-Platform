@@ -18,6 +18,7 @@
 
 <template>
   <div class="app-container" ref="app-container">
+    <ProjectSwitcher />
     <GuideTip tip-id="dpp/tasker/dpptaskerddv.list" />
     <el-container>
       <DeptTree
@@ -359,6 +360,7 @@
 </template>
 
 <script setup name="DppDevelopTask">
+import ProjectSwitcher from "@/views/dpp/components/ProjectSwitcher.vue";
 import useDefaultLang from "@/composables/useDefaultLang";
 import { treeData } from "@/views/dpp/task/developTask/data";
 import {

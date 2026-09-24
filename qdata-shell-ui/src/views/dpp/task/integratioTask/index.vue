@@ -18,6 +18,7 @@
 
 <template>
   <div class="app-container" ref="app-container">
+    <ProjectSwitcher />
     <GuideTip tip-id="dpp/tasker/dppEtlTask.list" />
     <el-container>
       <DeptTree
@@ -356,6 +357,7 @@
 </template>
 
 <script setup name="DppIntegratioTask">
+import ProjectSwitcher from "@/views/dpp/components/ProjectSwitcher.vue";
 import useDefaultLang from "@/composables/useDefaultLang";
 import {
   listDppEtlTask,

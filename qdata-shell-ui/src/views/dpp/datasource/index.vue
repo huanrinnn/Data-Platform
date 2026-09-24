@@ -18,6 +18,7 @@
 
 <template>
   <div class="app-container" ref="app-container">
+    <ProjectSwitcher />
     <GuideTip tip-id="da/daDatasource.list" />
 
     <div class="pagecont-top" v-show="showSearch">
@@ -1001,6 +1002,7 @@
 </template>
 
 <script setup name="DppDataSource">
+import ProjectSwitcher from "@/views/dpp/components/ProjectSwitcher.vue";
 import { ref, computed, watch, onActivated, onBeforeUnmount } from "vue";
 import { onBeforeRouteLeave } from "vue-router";
 import { ElMessageBox } from "element-plus";
@@ -1017,12 +1019,14 @@ import {
   editDatasourceStatus,
   noDppAdd,
 } from "@/api/da/dataSource/dataSource";
+import { currentUser } from "@/api/att/project/project";
 import { encrypt, isDecrypted } from "@/utils/aesEncrypt";
 import { deptUserTree } from "@/api/system/system/user.js";
 import { getToken } from "@/utils/auth.js";
 import useUserStore from "@/store/system/user";
 import { config } from "ace-builds";
 import useDefaultLang from "@/composables/useDefaultLang";
+import { shellStorageKey } from "@/utils/storage";
 
 const userStore = useUserStore();
 const { td } = useDefaultLang();
@@ -1133,8 +1137,35 @@ const projectTableRef = ref(null);
 const loadingProject = ref(false);
 const projectIdAndCodeList = ref([]);
 const route = useRoute();
-let type = route.query.type || null;
+const type = route.query.type ?? 1;
+const isProjectDatasourcePage = () => String(type) === "1";
 let isDatasourcePageActive = true;
+
+async function ensureActiveProjectContext() {
+  if (userStore.projectId && userStore.projectCode) {
+    return true;
+  }
+
+  const response = await currentUser();
+  const projectOptions = Array.isArray(response.data) ? response.data : [];
+  if (projectOptions.length === 0) {
+    userStore.projectId = null;
+    userStore.projectCode = "";
+    localStorage.removeItem(shellStorageKey("qdataProjectId"));
+    return false;
+  }
+
+  const storedProjectId = Number(localStorage.getItem(shellStorageKey("qdataProjectId")));
+  const storedProject = Number.isFinite(storedProjectId)
+    ? projectOptions.find((item) => item.id === storedProjectId)
+    : null;
+  const selectedProject = storedProject || projectOptions[0];
+
+  userStore.projectId = selectedProject.id;
+  userStore.projectCode = selectedProject.code;
+  localStorage.setItem(shellStorageKey("qdataProjectId"), String(selectedProject.id));
+  return true;
+}
 
 onActivated(() => {
   isDatasourcePageActive = true;
@@ -1161,7 +1192,7 @@ const upload = reactive({
   // Set the head of the request for upload
   headers: { Authorization: "Bearer " + getToken() },
   // Uploading Address
-  url: import.meta.env.VITE_APP_BASE_API + "/da/daDatasource/importData",
+  url: import.meta.env.VITE_APP_BASE_API + "/da/dataSource/importData",
 });
 
 const data = reactive({
@@ -1410,9 +1441,10 @@ function resetQueryProject() {
 }
 
 /** Query list of data sources */
-function getList() {
+async function getList() {
   loading.value = true;
-  if (type == 1) {
+  if (isProjectDatasourcePage()) {
+    await ensureActiveProjectContext();
     queryParams.value.projectId = userStore.projectId;
     queryParams.value.projectCode = userStore.projectCode;
     listDaDatasourceByProjectCode(queryParams.value).then((response) => {
@@ -1492,9 +1524,10 @@ function handleSortChange(column, prop, order) {
 }
 
 /** Add button operation */
-function handleAdd() {
+async function handleAdd() {
   reset();
-  if (type == 1) {
+  if (isProjectDatasourcePage()) {
+    await ensureActiveProjectContext();
     form.value.isDaOrDpp = true;
     form.value.projectList = [
       {
@@ -1706,10 +1739,17 @@ function handleDelete(row) {
   proxy.$modal
     .confirm(td("dpp.datasource.confirmDelete", { ids: _ids }))
     .then(function () {
-      return removeDppOrDa(_ids, type);
+      return isProjectDatasourcePage()
+        ? removeDppOrDa(_ids, type)
+        : delDaDatasource(_ids);
     })
     .then(() => {
-      getList();
+      if (total.value > 0 && daDatasourceList.value.length === 1 && queryParams.value.pageNum > 1) {
+        queryParams.value.pageNum -= 1;
+      }
+      return getList();
+    })
+    .then(() => {
       proxy.$modal.msgSuccess(td("dpp.datasource.deleteSuccess"));
     })
     .catch(() => {});
@@ -1718,7 +1758,7 @@ function handleDelete(row) {
 /** Export button operation */
 function handleExport() {
   proxy.download(
-    "da/daDatasource/export",
+    "da/dataSource/export",
     {
       ...queryParams.value,
     },

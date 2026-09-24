@@ -21,7 +21,7 @@ import request from '@/utils/request'
 // Query data assets-topic association list
 export function listDaAssetThemeRel(query) {
   return request({
-    url: '/da/daAssetThemeRel/list',
+    url: '/da/assetThemeRel/list',
     method: 'get',
     params: query
   })
@@ -30,7 +30,7 @@ export function listDaAssetThemeRel(query) {
 // Query data assets-topic association details
 export function getDaAssetThemeRel(id) {
   return request({
-    url: '/da/daAssetThemeRel/' + id,
+    url: '/da/assetThemeRel/' + id,
     method: 'get'
   })
 }
@@ -38,7 +38,7 @@ export function getDaAssetThemeRel(id) {
 // Added new data asset-theme association relationship
 export function addDaAssetThemeRel(data) {
   return request({
-    url: '/da/daAssetThemeRel',
+    url: '/da/assetThemeRel',
     method: 'post',
     data: data
   })
@@ -47,7 +47,7 @@ export function addDaAssetThemeRel(data) {
 // Modify the data asset-topic association relationship
 export function updateDaAssetThemeRel(data) {
   return request({
-    url: '/da/daAssetThemeRel',
+    url: '/da/assetThemeRel',
     method: 'put',
     data: data
   })
@@ -56,7 +56,7 @@ export function updateDaAssetThemeRel(data) {
 // Delete data asset-topic association relationship
 export function delDaAssetThemeRel(id) {
   return request({
-    url: '/da/daAssetThemeRel/' + id,
+    url: '/da/assetThemeRel/' + id,
     method: 'delete'
   })
 }

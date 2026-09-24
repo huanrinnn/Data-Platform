@@ -270,7 +270,7 @@ function handleDelete(row) {
 /** Export button action */
 function handleExport() {
     proxy.download(
-        'dp/dpDataElemAssetRel/export',
+        'dp/dataElemAssetRel/export',
         {
             ...queryParams.value
         },

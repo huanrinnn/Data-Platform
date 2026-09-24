@@ -398,7 +398,7 @@ const upload = reactive({
     // Set upload request headers
     headers: { Authorization: 'Bearer ' + getToken() },
     // Upload URL
-    url: import.meta.env.VITE_APP_BASE_API + '/da/daSensitiveLevel/importData'
+    url: import.meta.env.VITE_APP_BASE_API + '/da/sensitiveLevel/importData'
 });
 
 const data = reactive({
@@ -593,7 +593,7 @@ function handleDelete(row) {
 /** Export button operation */
 function handleExport() {
     proxy.download(
-        'da/daSensitiveLevel/export',
+        'da/sensitiveLevel/export',
         {
             ...queryParams.value
         },
