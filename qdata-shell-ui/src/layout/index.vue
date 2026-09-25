@@ -261,7 +261,9 @@ function routeKey(item) {
 }
 
 .dynamic-nav :deep(.el-sub-menu .el-menu) {
+  margin-left: 18px;
   padding-left: 8px;
+  border-left: 1px solid #33414e;
 }
 
 .dynamic-nav :deep(.el-menu--collapse .el-sub-menu__title) {

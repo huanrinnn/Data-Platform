@@ -20,37 +20,9 @@ import { defineConfig, loadEnv } from "vite";
 import path from "path";
 import createVitePlugins from "./vite/plugins";
 
-const chunkGroups = [
-  { name: "vue", deps: ["vue", "vue-router", "pinia", "@vueuse/core"] },
-  { name: "element-plus", deps: ["element-plus", "@element-plus/icons-vue"] },
-  { name: "antv", deps: ["@antv/x6", "@antv/x6-plugin-dnd", "@antv/x6-plugin-export", "@antv/x6-plugin-history", "@antv/x6-plugin-keyboard", "@antv/x6-plugin-selection", "@antv/x6-vue-shape", "@antv/layout"] },
-  { name: "editor", deps: ["monaco-editor", "ace-builds", "codemirror", "@codemirror"] },
-  { name: "charts", deps: ["echarts", "zrender", "vis-network"] },
-  { name: "office", deps: ["xlsx", "jszip", "@vue-office"] },
-  { name: "crypto", deps: ["crypto-js", "jsencrypt"] },
-];
-
-function getNodeModuleName(id) {
-  const normalized = id.split(path.sep).join("/");
-  const [, modulePath] = normalized.split("/node_modules/");
-  if (!modulePath) return "";
-  const parts = modulePath.split("/");
-  return parts[0]?.startsWith("@") ? `${parts[0]}/${parts[1]}` : parts[0];
-}
-
-function manualChunks(id) {
-  if (!id.includes("node_modules")) return undefined;
-  const moduleName = getNodeModuleName(id);
-  const group = chunkGroups.find(({ deps }) =>
-    deps.some((dep) => moduleName === dep || moduleName.startsWith(`${dep}/`))
-  );
-  return group?.name || "vendor";
-}
-
 // https://vitejs.dev/config/
 export default defineConfig(({ mode, command }) => {
   const env = loadEnv(mode, process.cwd());
-  const { VITE_APP_ENV, VITE_APP_FLOW_API } = env;
   return {
     // Deploy URLs in production and development environments.
     // By default, Vite will assume that your application is deployed on the root path of a domain name
@@ -62,9 +34,6 @@ export default defineConfig(({ mode, command }) => {
         input: {
           main: path.resolve(__dirname, "index.html"),
           // nested: path.resolve(__dirname, "login/index.html"),
-        },
-        output: {
-          manualChunks,
         },
       },
     },

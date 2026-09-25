@@ -17,19 +17,31 @@
 -->
 
 <template>
-  <!-- Page content -->
-  <el-watermark style="width: 100%; height: 100%; position: ''" v-if="watermarkText" :font="config.font"
-    :content="watermarkText" :gap="[200, 200]">
-    <router-view />
-  </el-watermark>
-  <router-view v-else />
+  <el-config-provider
+    :locale="localeStore.currentLocale.elLocale"
+    :size="elementSize"
+  >
+    <!-- Page content -->
+    <el-watermark
+      v-if="watermarkText"
+      style="width: 100%; height: 100%; position: ''"
+      :font="config.font"
+      :content="watermarkText"
+      :gap="[200, 200]"
+    >
+      <router-view />
+    </el-watermark>
+    <router-view v-else />
+  </el-config-provider>
 </template>
 
 <script setup>
+import Cookies from 'js-cookie'
 import useSettingsStore from "@/store/system/settings";
 import { handleThemeStyle } from "@/utils/theme";
 import { useRoute } from "vue-router"; // Introduce useRoute hook
 import useUserStore from "@/store/system/user";
+import useLocaleStore from '@/store/system/locale'
 import defaultSettings from '@/settings'
 import {i18n} from '@/plugins/vueI18n'
 import { shellStorageKey } from '@/utils/storage'
@@ -39,6 +51,8 @@ useUserStore();
 // import { alertEffects } from "element-plus";
 // Use the useRoute hook to get the current route object
 const route = useRoute();
+const localeStore = useLocaleStore()
+const elementSize = Cookies.get(shellStorageKey('size')) || 'default'
 // const storedUser = useUserStore();
 ;
 const title = () => i18n.global.t('common.html.appTitle') || defaultSettings.title;

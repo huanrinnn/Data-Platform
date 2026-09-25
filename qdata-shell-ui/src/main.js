@@ -16,19 +16,13 @@
  * See the LICENSE file in the project root for full license information.
  */
 
-import { createApp } from 'vue'
+import { createApp, defineAsyncComponent } from 'vue'
 
-import Cookies from 'js-cookie'
-import { shellStorageKey } from '@/utils/storage'
-
-import ElementPlus from 'element-plus'
 import AniviaComponents from 'anivia-components'
 import 'anivia-components/style.css'
-import 'element-plus/dist/index.css'
 
 // Initialize multiple languages
 import { setupI18n, i18n } from '@/plugins/vueI18n'
-import { useLocaleStoreWithOut } from '@/store/system/locale'
 
 import '@/assets/styles/system/index.scss' // global css
 import '@/assets/styles/system/anivia.scss' // Custom style css
@@ -54,7 +48,7 @@ import elementIcons from '@/components/SvgIcon/svgicon'
 import './permission' // permission control
 
 import { useDict } from '@/utils/dict'
-import { parseTime, resetForm, addDateRange, handleTree, selectDictLabel, selectDictLabels, getFormatValue, formatNewlines, formatVersion, downloadContent } from '@/utils/anivia.js'
+import { parseTime, resetForm, addDateRange, handleTree, selectDictLabel, selectDictLabels, getFormatValue, formatVersion, downloadContent } from '@/utils/anivia.js'
 
 // Pagination component
 import Pagination from '@/components/Pagination'
@@ -63,17 +57,12 @@ import RightToolbar from '@/components/RightToolbar'
 // Custom table tool component style 2
 import RightToolbar2 from '@/components/RightToolbar/index2.vue'
 // Rich text component
-import Editor from "@/components/Editor"
 // File upload component
-import FileUpload from "@/components/FileUpload2"
 // File upload button component
-import FileUploadbtn from "@/components/FileUploadbtn"
 // Prompt component
 import GuideTip from "@/components/GuideTip"
 // Image upload component
-import ImageUpload from "@/components/ImageUpload"
 // Image preview component
-import ImagePreview from "@/components/ImagePreview"
 // Custom tree selection component
 import TreeSelect from '@/components/TreeSelect'
 // dictionary tag component
@@ -92,6 +81,12 @@ import QtTable from '@/components/QtTable/index.vue';
 import QtTabPane from '@/components/QtTabPane/index.vue';
 import QtFormItem from '@/components/QtFormItem/index.vue';
 import QtTagGroup from '@/components/QtTagGroup/index.vue';
+
+const Editor = defineAsyncComponent(() => import('@/components/Editor/index.vue'))
+const FileUpload = defineAsyncComponent(() => import('@/components/FileUpload2/index.vue'))
+const FileUploadbtn = defineAsyncComponent(() => import('@/components/FileUploadbtn/index.vue'))
+const ImageUpload = defineAsyncComponent(() => import('@/components/ImageUpload/index.vue'))
+const ImagePreview = defineAsyncComponent(() => import('@/components/ImagePreview/index.vue'))
 
 const app = createApp(App)
 
@@ -148,14 +143,6 @@ const setupAll = async () => {
   app.component('svg-icon', SvgIcon)
 
   directive(app)
-
-  // Use element-plus and set the global size to follow the current language
-  const localeStore = useLocaleStoreWithOut()
-  app.use(ElementPlus, {
-    locale: localeStore.getCurrentLocale.elLocale,
-    // Support large, default, small
-    size: Cookies.get(shellStorageKey('size')) || 'default'
-  })
 
   app.mount('#app')
 }

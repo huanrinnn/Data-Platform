@@ -4,6 +4,7 @@ import {
   Connection,
   DataAnalysis,
   Document,
+  Grid,
   Monitor,
   Menu,
   Operation,
@@ -94,22 +95,75 @@ export const moduleTitleMap = {
 
 const iconMap = {
   dashboard: DataAnalysis,
+  home: DataAnalysis,
+  guide: DataAnalysis,
   monitor: Monitor,
+  server: Monitor,
+  redis: Coin,
+  db: Coin,
   system: Setting,
+  tool: Setting,
+  tools: Setting,
+  setting: Setting,
   user: User,
+  people: User,
+  tree: User,
   data: DataAnalysis,
-  database: Coin,
+  quality: TrendCharts,
   asset: Coin,
+  folder: Collection,
   collection: Collection,
+  dict: Collection,
   connection: Connection,
+  link: Connection,
   operation: Operation,
+  job: Operation,
+  build: Operation,
+  code: Operation,
+  form: Operation,
   chart: TrendCharts,
+  log: Document,
+  document: Document,
+  message: Document,
+  bug: Monitor,
+  example: Grid,
   api: Promotion,
   switch: Switch,
-  document: Document
+  menu: Menu
 }
 
-export const moduleIcon = (icon) => iconMap[icon] || Menu
+const pathIconMap = {
+  '/index': DataAnalysis,
+  '/system': Setting,
+  '/monitor': Monitor,
+  '/tool': Operation,
+  '/da': Coin,
+  '/dpp': Connection,
+  '/ds': Promotion,
+  '/dg': Operation,
+  '/dp': Document,
+  '/dm': Collection,
+  '/mc': Monitor,
+  '/att': User,
+  '/ai': TrendCharts
+}
+
+function normalizeIconKey(icon) {
+  return String(icon || '')
+    .trim()
+    .replace(/^el-icon-/, '')
+    .replace(/^s-/, '')
+    .replace(/([a-z])([A-Z])/g, '$1-$2')
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .toLowerCase()
+}
+
+export const moduleIcon = (icon, fullPath = '') => {
+  const normalizedIcon = normalizeIconKey(icon)
+  const compactIcon = normalizedIcon.replace(/-/g, '')
+  return iconMap[normalizedIcon] || iconMap[compactIcon] || pathIconMap[fullPath] || Menu
+}
 
 function catalogEntry(path, title, icon, children = []) {
   return { path, name: title, meta: { title, icon }, children }
