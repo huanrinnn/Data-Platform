@@ -21,6 +21,12 @@ import { createApp, defineAsyncComponent } from 'vue'
 import AniviaComponents from 'anivia-components'
 import 'anivia-components/style.css'
 
+// Programmatic Element Plus services are not discovered by the component resolver.
+import 'element-plus/es/components/message/style/css'
+import 'element-plus/es/components/notification/style/css'
+import 'element-plus/es/components/message-box/style/css'
+import 'element-plus/es/components/loading/style/css'
+
 // Initialize multiple languages
 import { setupI18n, i18n } from '@/plugins/vueI18n'
 
